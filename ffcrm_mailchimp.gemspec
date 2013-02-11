@@ -9,9 +9,9 @@ Gem::Specification.new do |s|
   s.version     = FfcrmMailchimp::VERSION
   s.authors     = ["TODO: Your name"]
   s.email       = ["TODO: Your email"]
-  s.homepage    = "TODO"
-  s.summary     = "TODO: Summary of FfcrmMailchimp."
-  s.description = "TODO: Description of FfcrmMailchimp."
+  s.homepage    = "http://www.fatfreecrm.com"
+  s.summary     = "A Fat Free CRM plugin to enable mailchimp functionality."
+  s.description = "TBD - To be described."
 
   s.files = Dir["{app,config,db,lib}/**/*"] + ["MIT-LICENSE", "Rakefile", "README.rdoc"]
   s.test_files = Dir["spec/**/*"]
