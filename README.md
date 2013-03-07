@@ -1,3 +1,15 @@
+About
+=====
+
+ffcrm_mailchimp is designed to work with the popular open source CRM [Fat Free CRM][http://www.fatfreecrm.com].
+
+ffcrm_mailchimp is Charityware.  You can use and copy it as much as you like, but you are
+encouraged to make a donation for those in need via the Crossroads Foundation (the organisation who built this plugin). See http://www.crossroads.org.hk/
+
+
+Usage
+=====
+
 Setup
 -----
 
@@ -5,6 +17,24 @@ Setup
 2. Add MailChimp integration to the lists you would like to integrate with FFCRM
 3. That’s it! A new field will automatically be added to contacts so you can manage their MailChimp list subscriptions from FFCRM
 
+<table border="0" cellpadding="10">
+  <tr>
+    <td align="center">
+      <a href="http://content.screencast.com/users/mattgow/folders/Jing/media/e5fa171b-77e1-4798-84eb-bdf1e9851500/2013-03-07_2230.png" target="_blank" title="Create Contacts">
+        <img src="http://content.screencast.com/users/mattgow/folders/Jing/media/a2d3589c-8ffb-4238-b0cf-12944621a20a/2013-03-07_2238.png" alt="Adding your MailChimp API Key">
+      </a>
+      <br />
+      <em>Supply your MailChimp API key</em>
+    </td>
+    <td align="center">
+      <a href="http://content.screencast.com/users/mattgow/folders/Jing/media/49fa8876-0d62-432e-8027-71fded3b670b/2013-03-07_2249.png" target="_blank" title="Create Contacts">
+        <img src="http://content.screencast.com/users/mattgow/folders/Jing/media/db190a29-b59c-4083-87b6-ba527788c17d/2013-03-07_2253.png" alt="You will see the lists available in your MailChimp account.">
+      </a>
+      <br />
+      <em>Enable integration for your MailChimp lists</em>
+    </td>
+  </tr>
+</table>
 
 ### Important Notes
 
