@@ -1,4 +1,4 @@
-source :rubygems
+source 'https://rubygems.org'
 
 # Declare your gem's dependencies in ffcrm_mailchimp.gemspec.
 # Bundler will treat runtime dependencies like base dependencies, and
