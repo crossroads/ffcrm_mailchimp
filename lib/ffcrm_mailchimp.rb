@@ -5,6 +5,7 @@ module FfcrmMailchimp
 
   class << self
 
+    # Access configuration specifc to this engine
     def config
       FfcrmMailchimp::Config.new
     end
