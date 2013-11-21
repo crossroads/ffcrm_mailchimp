@@ -11,10 +11,8 @@ class FfcrmMailchimp::MailchimpEndpoint < FfcrmEndpoint::Endpoint
 
   # authenticate inbound webhooks from mailchimp must contain an api_key
   def authenticate
-    #~ api_key = FfcrmMailchimp.config.api_key
-    #~ api_key.present? && params[:api_key] == api_key
-    debugger
-    true
+    api_key = FfcrmMailchimp.config.api_key
+    api_key.present? && params[:api_key] == api_key
   end
 
   private
