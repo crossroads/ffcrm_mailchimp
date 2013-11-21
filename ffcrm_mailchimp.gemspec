@@ -7,13 +7,13 @@ require "ffcrm_mailchimp/version"
 Gem::Specification.new do |s|
   s.name        = "ffcrm_mailchimp"
   s.version     = FfcrmMailchimp::VERSION
-  s.authors     = ["TODO: Your name"]
-  s.email       = ["TODO: Your email"]
+  s.authors     = ["Steve Kenworthy"]
+  s.email       = ["steveyken@gmail.com"]
   s.homepage    = "http://www.fatfreecrm.com"
   s.summary     = "A Fat Free CRM plugin to enable mailchimp functionality."
-  s.description = "TBD - To be described."
+  s.description = "Enables contact email addresses to be sync'd to and from a mailchimp account."
 
-  s.files = Dir["{app,config,db,lib}/**/*"] + ["MIT-LICENSE", "Rakefile", "README.rdoc"]
+  s.files = Dir["{app,config,db,lib}/**/*"] + ["LICENSE", "Rakefile", "README.md"]
   s.test_files = Dir["spec/**/*"]
 
   s.add_dependency "rails", "~> 3.2.11"

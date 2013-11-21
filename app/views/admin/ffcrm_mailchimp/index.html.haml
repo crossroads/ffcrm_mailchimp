@@ -1,0 +1,18 @@
+.title
+  = t(:ffcrm_mailchimp_settings, default: "Mailchimp Integration Settings")
+
+.remote
+  .section
+
+    = form_tag 'ffcrm_mailchimp', method: 'put' do
+
+      %p
+
+      Please enter the API key from your mailchimp account.
+      %br/
+      .label.top.req
+        Api key:
+        = text_field_tag 'api_key', @config.api_key, size: 30, required: true
+
+      %p
+      = submit_tag 'Save', name: 'update', style: "width:60px"
