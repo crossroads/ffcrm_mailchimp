@@ -7,6 +7,13 @@ ffcrm_mailchimp is Charityware.  You can use and copy it as much as you like, bu
 encouraged to make a donation for those in need via the Crossroads Foundation (the organisation who built this plugin). See http://www.crossroads.org.hk/
 
 
+Installation
+=====
+
+Add the ffcrm_mailchimp gem to your Gemfile.
+
+```gem 'ffcrm_mailchimp', github: 'crossroads/ffcrm_mailchimp'```
+
 Usage
 =====
 
@@ -38,7 +45,7 @@ Setup
 
 #### Advanced: changing MailChimp's configuration
 
-By default, MailChimp will tell FFCRM about subscribes, unsubscribes, profile updates, cleaned addresses, email changed and campaign sending events performed by a MailChimp subscriber, MailChimp Admin or the MailChimp API. You can, however, fine tune the actions in MailChimp that will cause FFCRM to update by clicking “advanced” to edit MailChimp’s settings. 
+By default, MailChimp will tell FFCRM about subscribes, unsubscribes, profile updates, cleaned addresses, email changed and campaign sending events performed by a MailChimp subscriber, MailChimp Admin or the MailChimp API. You can, however, fine tune the actions in MailChimp that will cause FFCRM to update by clicking “advanced” to edit MailChimp’s settings.
 * We've not thought through all the implications of all the settings combinations you could choose in MailChimp so experiment at your own risk.
 * If you remove and later re-add integration to a list, it will get the default settings so if you’d fine tuned them in MailChimp before you’d have to redo that.
 
@@ -51,14 +58,14 @@ If your data is messed up you should first clear all settings and data, reconfig
 ###Clear all settings and data###
 This button starts by destroying any MailChimp subscriber info already in FFCRM and telling MailChimp we no longer want it to inform FFCRM of any subscriber changes. There is no “undo”.
 
-This is great if you have changed MailChimp accounts or if you have deleted some MailChimp lists and/or generaly got your data way out of whack. You can start fresh, reconfigure the plugin and pull fresh dat from MailChimp.  
+This is great if you have changed MailChimp accounts or if you have deleted some MailChimp lists and/or generaly got your data way out of whack. You can start fresh, reconfigure the plugin and pull fresh dat from MailChimp.
 
 Important Notes
 ---------------
 
 #### Deleting a list in MailChimp isn't enough
 
-If you delete a list in MailChimp or disable its integration, that list will remain visible as a checkbox on FFCRM contacts and any existing data will remain untouched in FFCRM (the plugin doesn’t clean it out). To get rid of a list entirely clear all plugin settings and data in FFCRM, then reconfigure the plugin and finally, update your data again from MailChimp. 
+If you delete a list in MailChimp or disable its integration, that list will remain visible as a checkbox on FFCRM contacts and any existing data will remain untouched in FFCRM (the plugin doesn’t clean it out). To get rid of a list entirely clear all plugin settings and data in FFCRM, then reconfigure the plugin and finally, update your data again from MailChimp.
 
 
 #### Contacts have to be valid
@@ -91,7 +98,7 @@ Note: This assumes you have not tweaked the advanced integration settings on the
 Note: currently he plugin only synchronises First Name, Last Name and email address
 
 * Subscribe: when a new contact is created or an existing one is edited and a MailChimp list is indicated
-* Unsubscribe: Can happen when a contact is edited, deleted or merged (see below) 
+* Unsubscribe: Can happen when a contact is edited, deleted or merged (see below)
 * Profile Update: Can hapen when a contact is created or edited
 * Merge two contacts: will delete one MailChimp contact and probably update another one (assuming it was changed in merge)
 
@@ -103,7 +110,7 @@ Note: If you change a contact in FFCRM and the plugin cannot update MailChimp fo
 Limitations
 -----------
 
-* This plugin will only sync a contact’s main email address . You can’t, for example, have a contact subscribed to one list with their primary email address and another list with their alternative email address. 
+* This plugin will only sync a contact’s main email address . You can’t, for example, have a contact subscribed to one list with their primary email address and another list with their alternative email address.
 * This plugin only syncs FFCRM contacts (not accounts or other objects).
 * The plugin can only keep First Name, Last Name and Email Address in sync (not other custom fields)
 * If you rename a list in MailChimp (but don’t change it’s ID) the integration will keep working. However, the name of the checkbox in FFCRM used for that list will still have the old name. If you want to fix that you need to reset everything and grab MailChimp data again.
