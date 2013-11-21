@@ -12,6 +12,9 @@ module FfcrmMailchimp
       # When a contact is saved, ensure the mailchimp process hook is fired.
       require 'ffcrm_mailchimp/save_hook'
 
+      # Setup a webhook endpoint to receive incoming mailchimp updates
+      require 'ffcrm_mailchimp/mailchimp_endpoint'
+
     end
 
     config.generators do |g|

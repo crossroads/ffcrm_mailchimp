@@ -2,11 +2,13 @@ require 'ffcrm_mailchimp'
 
 module FfcrmMailchimp
 
-  class Sync
+  #
+  # Process contact updates from FFCRM to Mailchimp
+  class OutboundSync
 
     attr_accessor :record
 
-    # call using FfcrmMailchimp::Sync.process(record)
+    # call using FfcrmMailchimp::OutboundSync.process(record)
     def self.process(record)
       new(record).process
     end
@@ -32,6 +34,7 @@ module FfcrmMailchimp
 
     # Changes to the email address on the record
     # Either nil or an array ['test@example.com', 'testing@example.com']
+    # Depends on ActiveRecord::Dirty
     def email_changes
       @record.email_change
     end
