@@ -6,9 +6,16 @@ module FfcrmMailchimp
 
     attr_accessor :record
 
+    # call using FfcrmMailchimp::Sync.process(record)
+    def self.process(record)
+      new(record).process
+    end
+
     def initialize(record)
       @record = record
     end
+
+    private
 
     # Determine if we need to send changes to Mailchimp.
     def process
@@ -22,8 +29,6 @@ module FfcrmMailchimp
         #~ end
       end
     end
-
-    private
 
     # Changes to the email address on the record
     # Either nil or an array ['test@example.com', 'testing@example.com']

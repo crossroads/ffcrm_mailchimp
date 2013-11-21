@@ -4,7 +4,7 @@ ActiveSupport.on_load(:fat_free_crm_contact) do
   require 'ffcrm_mailchimp/sync'
 
   after_save do |record|
-    FfcrmMailchimp::Sync.new(record).process
+    FfcrmMailchimp::Sync.process(record)
   end
 
 end
