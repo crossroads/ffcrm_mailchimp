@@ -17,8 +17,6 @@ module FfcrmMailchimp
       @params = params
     end
 
-    private
-
     # Make any changes to CRM contacts.
     def process
       Rails.logger.info("FfcrmMailchimp::InboundSync received #{@params}")

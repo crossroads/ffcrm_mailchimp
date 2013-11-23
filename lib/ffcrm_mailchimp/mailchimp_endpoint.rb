@@ -1,5 +1,5 @@
 require 'cgi'
-require 'ffcrm_endpoint'
+require 'ffcrm_endpoint/endpoint'
 require 'ffcrm_mailchimp/inbound_sync'
 
 class FfcrmMailchimp::MailchimpEndpoint < FfcrmEndpoint::Endpoint

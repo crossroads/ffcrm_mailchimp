@@ -13,7 +13,6 @@ Installation
 Add the ffcrm_mailchimp gem (and a dependency) to your Gemfile.
 
 ```
-gem 'ffcrm_endpoint', github: 'fat_free_crm/ffcrm_endpoint'
 gem 'ffcrm_mailchimp', github: 'crossroads/ffcrm_mailchimp'
 ```
 
