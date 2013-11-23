@@ -5,7 +5,7 @@ class CustomFieldMailchimpList < CustomField
   # Renders the selected groups for this list
   #------------------------------------------------------------------------------
   def render(group_ids)
-    group_ids && list.groups.select{ |id, name| group_ids.include?(id) }.values.join(', ')
+    group_ids && list.groups.select{ |group| group_ids.include?(group.id) }.map(&:name).join(', ')
   end
 
   # Return all available mailchimp lists. Used in admin screen

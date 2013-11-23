@@ -5,7 +5,7 @@ class MailchimpListInput < SimpleForm::Inputs::CollectionCheckBoxesInput
   # Generate a checkbox list of groups
   #------------------------------------------------------------------------------
   def input
-    @builder.send("collection_check_boxes", attribute_name, collection, :first, :second, input_options, input_html_options)
+    @builder.send("collection_check_boxes", attribute_name, collection, :id, :name, input_options, input_html_options)
   end
 
   private
@@ -14,7 +14,7 @@ class MailchimpListInput < SimpleForm::Inputs::CollectionCheckBoxesInput
   # [ ['id', 'name'], ['id', 'name'] ]
   #------------------------------------------------------------------------------
   def collection
-    (cf.list.try(:groups) || []).to_a
+    cf.list.groups
   end
 
   # Pre-check group ids that have been previously saved

@@ -1,5 +1,9 @@
+require 'ffcrm_mailchimp/mailchimp_group'
+
 module FfcrmMailchimp
 
+  #
+  # This relates to a list in mailchimp
   class MailchimpList
 
     attr_accessor :id, :name
@@ -32,10 +36,9 @@ module FfcrmMailchimp
     end
 
     #
-    # A hash of groups belonging to this list
-    # { '130284' => 'Group A', '128903' => 'Group B' }
+    # An array of groups belonging to this list
     def groups
-      { '130284' => 'Group A', '128903' => 'Group B' } # dummy groups
+      FfcrmMailchimp::MailchimpGroup.groups_for(id)
     end
 
     private
@@ -49,13 +52,6 @@ module FfcrmMailchimp
         [ new('157894', 'List A'),
           new('789456', 'List B') ]
       end
-    end
-
-    #
-    # Ask the Mailchimp API for all available groups for this list
-    # Return a hash of group id and group name
-    def get_groups_from_mailchimp_api
-      { '130284' => 'Group A', '128903' => 'Group B' } # list_id
     end
 
   end
