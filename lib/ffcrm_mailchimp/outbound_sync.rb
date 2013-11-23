@@ -1,5 +1,3 @@
-require 'ffcrm_mailchimp'
-
 module FfcrmMailchimp
 
   #
@@ -17,8 +15,6 @@ module FfcrmMailchimp
       @record = record
     end
 
-    private
-
     # Determine if we need to send changes to Mailchimp.
     def process
       if email_changes.present? or list_subscriptions_changes.present?
@@ -31,6 +27,8 @@ module FfcrmMailchimp
         #~ end
       end
     end
+
+    private
 
     # Changes to the email address on the record
     # Either nil or an array ['test@example.com', 'testing@example.com']

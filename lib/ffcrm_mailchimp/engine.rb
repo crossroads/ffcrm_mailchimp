@@ -1,7 +1,12 @@
 module FfcrmMailchimp
   class Engine < ::Rails::Engine
 
+    paths["app/models"] << "app/models/fields/"
+
     config.to_prepare do
+
+      # Register the mailchimp lists custom field
+      Field.register( as: 'mailchimp_list', klass: 'CustomFieldMailchimpList', type: 'text')
 
       # Add admin/ffcrm_mailchimp tab
       tab_urls = FatFreeCRM::Tabs.admin.map{|tab| tab[:url]}.map{|url| url[:controller]}

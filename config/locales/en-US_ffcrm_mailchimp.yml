@@ -1,0 +1,4 @@
+en-US:
+  field_types:
+    mailchimp_list:
+      title: "Mailchimp"
