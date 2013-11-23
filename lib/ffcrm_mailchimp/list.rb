@@ -1,10 +1,10 @@
-require 'ffcrm_mailchimp/mailchimp_group'
+require 'ffcrm_mailchimp/group'
 
 module FfcrmMailchimp
 
   #
   # This relates to a list in mailchimp
-  class MailchimpList
+  class List
 
     attr_accessor :id, :name
 
@@ -38,7 +38,7 @@ module FfcrmMailchimp
     #
     # An array of groups belonging to this list
     def groups
-      FfcrmMailchimp::MailchimpGroup.groups_for(id)
+      FfcrmMailchimp::Group.groups_for(id)
     end
 
     private

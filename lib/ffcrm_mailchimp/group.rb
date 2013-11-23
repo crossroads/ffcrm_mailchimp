@@ -2,7 +2,7 @@ module FfcrmMailchimp
 
   #
   # This relates to a group inside a list in mailchimp
-  class MailchimpGroup
+  class Group
 
     attr_accessor :id, :name, :list_id
 

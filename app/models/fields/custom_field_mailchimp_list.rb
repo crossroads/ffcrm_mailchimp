@@ -1,4 +1,4 @@
-require 'ffcrm_mailchimp/mailchimp_list'
+require 'ffcrm_mailchimp/list'
 
 class CustomFieldMailchimpList < CustomField
 
@@ -11,13 +11,13 @@ class CustomFieldMailchimpList < CustomField
   # Return all available mailchimp lists. Used in admin screen
   #------------------------------------------------------------------------------
   def collection
-    FfcrmMailchimp::MailchimpList.all
+    FfcrmMailchimp::List.all
   end
 
   # Returns the mailchimp list associated with this instance
   #------------------------------------------------------------------------------
   def list
-    FfcrmMailchimp::MailchimpList.get(list_id)
+    FfcrmMailchimp::List.get(list_id)
   end
 
   # The mailchimp list id associated with this instance

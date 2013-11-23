@@ -1,4 +1,4 @@
-require 'ffcrm_mailchimp/mailchimp_list'
+require 'ffcrm_mailchimp/list'
 
 class MailchimpListInput < SimpleForm::Inputs::CollectionCheckBoxesInput
 
