@@ -9,6 +9,6 @@ before_install:
   - "sh -e /etc/init.d/xvfb start"
 
 before_script:
-  - sh -c "if [ \"$DB\" = 'postgres' ]; then psql -c 'create database ffcrm_mailchimp_test;' -U postgres; fi"
+  - sh -c "psql -c 'create database ffcrm_mailchimp_test;' -U postgres"
 
 script: "bundle exec rspec"
