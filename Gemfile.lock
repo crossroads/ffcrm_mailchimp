@@ -32,18 +32,12 @@ GIT
       valium
       will_paginate (~> 3.0.2)
 
-GIT
-  remote: git://github.com/fatfreecrm/ffcrm_endpoint.git
-  revision: faf0232997d743994c66e48ec4145b306c76f7b2
-  specs:
-    ffcrm_endpoint (0.0.1)
-      rails (~> 3.2.13)
-
 PATH
   remote: .
   specs:
     ffcrm_mailchimp (0.0.1)
       fat_free_crm
+      ffcrm_endpoint
       rails (~> 3.2.11)
 
 GEM
@@ -118,6 +112,8 @@ GEM
       factory_girl (~> 4.3.0)
       railties (>= 3.0.0)
     ffaker (1.21.0)
+    ffcrm_endpoint (0.1.0)
+      rails (~> 3.2.13)
     haml (3.1.8)
     hike (1.2.3)
     htmlentities (4.3.1)
@@ -235,7 +231,6 @@ DEPENDENCIES
   factory_girl_rails
   fat_free_crm!
   ffaker
-  ffcrm_endpoint!
   ffcrm_mailchimp!
   jquery-rails
   pg
