@@ -8,4 +8,7 @@ before_install:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
 
+before_script:
+  - sh -c "if [ \"$DB\" = 'postgres' ]; then psql -c 'create database ffcrm_mailchimp_test;' -U postgres; fi"
+
 script: "bundle exec rspec"
