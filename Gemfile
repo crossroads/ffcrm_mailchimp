@@ -16,5 +16,5 @@ gem 'fat_free_crm', :github => 'fatfreecrm/fat_free_crm'
 
 # To use debugger
 group :development do
-  gem 'debugger'
+  gem 'debugger' unless ENV['CI']
 end
