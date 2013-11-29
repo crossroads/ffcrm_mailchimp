@@ -1,5 +1,5 @@
 require 'ffcrm_mailchimp/group'
-
+require 'mailchimp'
 module FfcrmMailchimp
 
   #
@@ -10,24 +10,20 @@ module FfcrmMailchimp
 
     class << self
 
-      #
       # All the available lists in Mailchimp
       def lists
         self._lists
       end
 
-      #
       # All lists in form suitable for collection in select list
       def all
-        self._lists.collect{ |list| [list.name, list.id] }
+        self._lists.map(&:stringify_keys).collect { |hlist|[hlist["name"], hlist["id"]]}
       end
 
-      #
       # Lookup a list based on id
       def get(id)
         self._lists.select{ |list| list.id == id }.first
       end
-
     end
 
     def initialize(id, name)
@@ -42,18 +38,14 @@ module FfcrmMailchimp
     end
 
     private
-
-    #
     # Ask the Mailchimp API for all available lists
     # Return a hash of list id and list name
     def self._lists
-      @lists ||= begin
-        # dummy list
-        [ new('157894', 'List A'),
-          new('789456', 'List B') ]
-      end
+      @lists = _config.lists["data"]
     end
 
+    def self._config
+      Mailchimp::API.new(Config.new.api_key)
+    end
   end
-
 end
