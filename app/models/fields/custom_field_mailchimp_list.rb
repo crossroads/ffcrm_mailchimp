@@ -2,6 +2,10 @@ require 'ffcrm_mailchimp/list'
 
 class CustomFieldMailchimpList < CustomField
 
+  # Ensure serialization is activated when mailchimp fields are created/updated
+  #------------------------------------------------------------------------------
+  after_save { apply_serialization }
+
   # Renders the selected groups for this list
   #------------------------------------------------------------------------------
   def render(group_ids)
@@ -30,6 +34,32 @@ class CustomFieldMailchimpList < CustomField
   #------------------------------------------------------------------------------
   def list_id=(value)
     settings['list_id'] = value
+  end
+
+  # Serialize mailchimp lists as Arrays
+  #------------------------------------------------------------------------------
+  def apply_serialization
+    klass_name = self.field_group.try(:klass_name)
+    return if klass_name.blank?
+    klass = klass_name.constantize
+
+    if !klass.serialized_attributes.keys.include?(self.name)
+      klass.serialize(self.name.to_sym, Array)
+      Rails.logger.debug("FfcrmMailchimp: Serializing #{self.name} as Array for #{klass}.")
+    end
+
+    #
+    # Override the mutator on the object class to ensure items are serialized correctly
+    # ["", "steve", "jim", "bob"] becomes ["steve", "jim", "bob"]
+    attr = self.name
+    unless klass.instance_methods.include?(:"#{attr}=")
+      klass.class_eval <<-WRITER, __FILE__, __LINE__ + 1
+        define_method "#{attr}=" do |value|
+          write_attribute( attr, value.reject(&:blank?) )
+        end
+      WRITER
+    end
+
   end
 
 end

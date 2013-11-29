@@ -24,8 +24,7 @@ class MailchimpListInput < SimpleForm::Inputs::CollectionCheckBoxesInput
 
   # selected group ids
   def value
-    raw = object.send(attribute_name)
-    YAML.load(raw).select(&:present?) || []
+    object.send(attribute_name)
   end
 
   # Provides a reference to the custom field instance
