@@ -17,5 +17,5 @@ gem 'mailchimp-api', require: 'mailchimp'
 
 # To use debugger
 group :development do
-  gem 'debugger'
+  gem 'debugger' unless ENV['CI']
 end

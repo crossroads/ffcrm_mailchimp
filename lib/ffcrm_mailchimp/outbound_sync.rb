@@ -40,7 +40,10 @@ module FfcrmMailchimp
     # Changes to the list subscriptions on the record
     # Either nil or an array ['listA', 'listB']
     def list_subscriptions_changes
-      nil # TODO
+      # fields is the list of mailchimp list fields that we're interested in checking for changes.
+      changes = Field.where(as: 'mailchimp_list').collect do |field|
+        @record.send("#{field.name}_change")
+      end.compact
     end
 
     # send updates to mailchimp
