@@ -2,14 +2,12 @@ require 'ffcrm_mailchimp/group'
 require 'mailchimp'
 module FfcrmMailchimp
 
-  #
   # This relates to a list in mailchimp
   class List
 
     attr_accessor :id, :name
 
     class << self
-
       # All the available lists in Mailchimp
       def lists
         self._lists
@@ -17,7 +15,7 @@ module FfcrmMailchimp
 
       # All lists in form suitable for collection in select list
       def all
-        self._lists.map(&:stringify_keys).collect { |hlist|[hlist["name"], hlist["id"]]}
+        self._lists.collect{ |hlist|[hlist.name, hlist.id]}
       end
 
       # Lookup a list based on id
@@ -31,7 +29,6 @@ module FfcrmMailchimp
       @name = name
     end
 
-    #
     # An array of groups belonging to this list
     def groups
       FfcrmMailchimp::Group.groups_for(id)
@@ -41,7 +38,7 @@ module FfcrmMailchimp
     # Ask the Mailchimp API for all available lists
     # Return a hash of list id and list name
     def self._lists
-      @lists = _config.lists["data"]
+      @lists = _config.lists["data"].map(&:stringify_keys).map {|list| new(list["id"], list["name"])}
     end
 
     def self._config
