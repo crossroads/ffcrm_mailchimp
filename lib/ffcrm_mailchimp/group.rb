@@ -26,10 +26,10 @@ module FfcrmMailchimp
     def self._groups
       @groups ||= begin
         # dummy groups: id, name, list_id
-        [ new('130284', 'Group A', '157894'),
-          new('128903', 'Group B', '157894'),
-          new('423423', 'Group C', '789456'),
-          new('957303', 'Group D', '789456') ]
+        [ new('130284', 'Group A', '80d6029b98'),
+          new('128903', 'Group B', '80d6029b98'),
+          new('423423', 'Group C', '80d6029b98'),
+          new('957303', 'Group D', '80d6029b98') ]
       end
     end
 

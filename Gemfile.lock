@@ -38,6 +38,7 @@ PATH
     ffcrm_mailchimp (0.0.1)
       fat_free_crm
       ffcrm_endpoint
+      mailchimp
       rails (~> 3.2.11)
 
 GEM
@@ -106,17 +107,21 @@ GEM
     dynamic_form (1.1.4)
     email_reply_parser_ffcrm (0.5.0)
     erubis (2.7.0)
+    excon (0.30.0)
     factory_girl (4.3.0)
       activesupport (>= 3.0.0)
     factory_girl_rails (4.3.0)
       factory_girl (~> 4.3.0)
       railties (>= 3.0.0)
     ffaker (1.21.0)
-    ffcrm_endpoint (0.1.1)
+    ffcrm_endpoint (0.1.2)
       rails (~> 3.2.13)
     haml (3.1.8)
     hike (1.2.3)
     htmlentities (4.3.1)
+    httparty (0.12.0)
+      json (~> 1.8)
+      multi_xml (>= 0.5.2)
     i18n (0.6.5)
     journey (1.0.4)
     jquery-rails (2.1.4)
@@ -126,9 +131,15 @@ GEM
     mail (2.5.4)
       mime-types (~> 1.16)
       treetop (~> 1.4.8)
+    mailchimp (0.0.9)
+      httparty
+    mailchimp-api (2.0.4)
+      excon (>= 0.16.0)
+      json (>= 1.7.7)
     mime-types (1.25.1)
     mini_portile (0.5.2)
     multi_json (1.8.2)
+    multi_xml (0.5.5)
     nokogiri (1.6.0)
       mini_portile (~> 0.5.0)
     paper_trail (2.7.2)
@@ -233,5 +244,6 @@ DEPENDENCIES
   ffaker
   ffcrm_mailchimp!
   jquery-rails
+  mailchimp-api
   pg
   rspec-rails
