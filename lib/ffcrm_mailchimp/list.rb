@@ -1,5 +1,5 @@
 require 'ffcrm_mailchimp/group'
-require 'gibbon'
+
 module FfcrmMailchimp
 
   # This relates to a list in mailchimp
@@ -38,11 +38,11 @@ module FfcrmMailchimp
     # Ask the Mailchimp API for all available lists
     # Return a hash of list id and list name
     def self._lists
-      @lists = _config.lists.list({:start => 0, :limit => 100})["data"].map(&:stringify_keys).map {|list| new(list["id"], list["name"])}
+      @lists = _config.lists.list["data"].map(&:stringify_keys).map {|list| new(list["id"], list["name"])}
     end
 
     def self._config
-      Gibbon::API.new(Config.new.api_key)
+      Config.new.mailchimp_api
     end
   end
 end

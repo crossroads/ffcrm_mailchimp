@@ -1,3 +1,5 @@
+require 'gibbon'
+
 module FfcrmMailchimp
 
   class Config
@@ -20,6 +22,9 @@ module FfcrmMailchimp
       config.present? ? config[:api_key] : nil
     end
 
+    def mailchimp_api
+      Gibbon::API.new(api_key)
+    end
   end
 
 end

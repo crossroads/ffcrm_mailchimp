@@ -1,8 +1,4 @@
 FactoryGirl.define do
-  # factory :list do
-  #   name  "Foo List"
-  #   url   "/controller/action"
-  # end
   factory :list, class: Gibbon::APICategory do
     id "test1234"
     web_id { rand(10) }
@@ -19,6 +15,6 @@ FactoryGirl.define do
     subscribe_url_long {FactoryGirl.generate(:website)}
     beamer_address Faker::Internet.email
     visibility "pub"
-    initialize_with { attributes } 
+    initialize_with { attributes }
   end
 end
