@@ -1,29 +1,26 @@
 require 'spec_helper'
 
 describe FfcrmMailchimp::List do
+
+  let!(:ffcrm_mailchimp){ FactoryGirl.create(:ffcrm_mailchimp)}
   let(:b_list){[]}
   let(:lists){ FactoryGirl.build_list(:list, 2)}
-  let!(:ffcrm_mailchimp){ FactoryGirl.create(:ffcrm_mailchimp)}
-  
+
   before(:each) do
-    Mailchimp::API.any_instance.stub(:lists){
-      {"data" => lists}
-    }
+    Gibbon::API.any_instance.stub_chain('lists.list').and_return({"data" => lists})
   end
 
   describe "initialize" do
   end
-  
+
   describe ".lists" do
     context "mailchimp account" do
       it "should return all the lists" do
-        FfcrmMailchimp::List.lists.should_not be_blank 
+        FfcrmMailchimp::List.lists.should_not be_blank
         FfcrmMailchimp::List.lists.count.should eq 2
       end
       it "should return nil if no lists" do
-        Mailchimp::API.any_instance.stub(:lists){
-          {"data" => b_list}
-        }
+        Gibbon::API.any_instance.stub_chain('lists.list').and_return({ "data" =>b_list })
         FfcrmMailchimp::List.lists.should be_blank
       end
     end
@@ -38,7 +35,7 @@ describe FfcrmMailchimp::List do
       all_result.should be_kind_of Array
     end
   end
-  
+
   describe ".get(id)" do
     it "should return list for the given id" do
       list_by_id = FfcrmMailchimp::List.get("test1234")
@@ -50,7 +47,7 @@ describe FfcrmMailchimp::List do
   describe ".group" do
     context "when list id given" do
       it "should return all groups" do
-        
+
       end
       it "should return nil if no group available" do
       end

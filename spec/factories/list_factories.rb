@@ -3,7 +3,7 @@ FactoryGirl.define do
   #   name  "Foo List"
   #   url   "/controller/action"
   # end
-  factory :list, class:Hash do
+  factory :list, class: Gibbon::APICategory do
     id "test1234"
     web_id { rand(10) }
     name Faker::Lorem.sentence(1)
@@ -22,4 +22,3 @@ FactoryGirl.define do
     initialize_with { attributes } 
   end
 end
-
