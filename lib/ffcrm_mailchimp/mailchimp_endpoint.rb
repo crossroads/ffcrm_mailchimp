@@ -12,6 +12,42 @@ class FfcrmMailchimp::MailchimpEndpoint < FfcrmEndpoint::Endpoint
   # authenticate inbound webhooks from mailchimp must contain an api_key
   def authenticate
     api_key = FfcrmMailchimp.config.api_key
+    response_type
+    api_key.present? && params[:api_key] == api_key
+  end
+
+  def subscribe
+    contact = Contact.find_by_email(params[:data][:email])
+    if contact.blank?
+      record = Contact.create(first_name: params[:data][:merges][:FNAME],
+        last_name: params[:data][:merges][:LNAME],email: params[:data][:merges][:EMAIL])
+      record.save
+    end
+  end
+
+  def profile_update
+    contact = Contact.find_by_email(params[:data][:email])
+    unless contact.blank?
+      contact.update_attributes(first_name: params[:data][:merges][:FNAME],
+        last_name: params[:data][:merges][:LNAME])
+      contact.save
+    end
+  end
+
+  def email_changed
+    old_contact = Contact.find_by_email(params[:data][:old_email])
+    new_contact = Contact.find_by_email(params[:data][:new_email])
+    if(old_contact.present? && new_contact.blank? && params[:data][:new_email].present?)
+      old_contact.update_attributes(email: params[:data][:new_email])
+      old_contact.save
+    end
+  end
+
+  def unsubscribe
+
+  end
+
+  def response_type
     case params[:type]
     when "subscribe"
       subscribe
@@ -23,37 +59,6 @@ class FfcrmMailchimp::MailchimpEndpoint < FfcrmEndpoint::Endpoint
       unsubscribe
     else
     end
-    api_key.present? && params[:api_key] == api_key
-  end
-
-  def subscribe
-    user = User.find_by_email(params[:data][:email])
-    if user.blank?
-      record = User.create(first_name: params[:data][:merges][:FNAME],
-        last_name: params[:data][:merges][:LNAME],email: params[:data][:merges][:EMAIL])
-      record.save
-    end
-  end
-
-  def profile_update
-    user = User.find_by_email(params[:data][:email])
-    unless user.blank?
-      user.update_attributes(first_name: params[:data][:merges][:FNAME],
-        last_name: params[:data][:merges][:LNAME])
-      user.save
-    end
-  end
-
-  def email_changed
-    user = User.find_by_email(params[:data][:old_email])
-    if(user.present? && params[:data][:new_email].present?)
-      user.update_attributes(email: params[:data][:new_email])
-      user.save
-    end
-  end
-
-  def unsubscribe
-
   end
 
   private
