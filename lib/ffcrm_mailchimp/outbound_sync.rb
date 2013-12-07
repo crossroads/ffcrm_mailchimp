@@ -27,6 +27,11 @@ module FfcrmMailchimp
         #~ end
       end
     end
+    #Check whether this email exists or  not?
+    def is_subscribed_mailchimp_user
+      # (Config.new.mailchimp_api).lists.member_info({id: "80d6029b98",emails: [{email:"shefaly16@gmail.com"}]})
+      #If exists then check which all groups are active if selected it not available then update the contact
+    end
 
     private
 
@@ -50,7 +55,6 @@ module FfcrmMailchimp
     def synchronise!
       Rails.logger.info("FfcrmMailchimp: Contact #{@record.id} was updated")
     end
-
   end
 
 end

@@ -44,7 +44,7 @@ class CustomFieldMailchimpList < CustomField
     klass = klass_name.constantize
 
     if !klass.serialized_attributes.keys.include?(self.name)
-      klass.serialize(self.name.to_sym, Array)
+      klass.serialize(self.name.to_sym, Hash)
       Rails.logger.debug("FfcrmMailchimp: Serializing #{self.name} as Array for #{klass}.")
     end
 
@@ -54,12 +54,13 @@ class CustomFieldMailchimpList < CustomField
     attr = self.name
     unless klass.instance_methods.include?(:"#{attr}=")
       klass.class_eval <<-WRITER, __FILE__, __LINE__ + 1
+        define_method "list_with_group" do |val|
+          {"list_id" => "#{list_id}", "groups" => val} if val.present?
+        end
         define_method "#{attr}=" do |value|
-          write_attribute( attr, value.reject(&:blank?) )
+          write_attribute( attr, list_with_group(value.reject(&:blank?)) )
         end
       WRITER
     end
-
   end
-
 end
