@@ -25,7 +25,7 @@ class MailchimpListInput < SimpleForm::Inputs::CollectionCheckBoxesInput
   # selected group ids
   def value
     list_of_groups = []
-    list_of_groups = object.send(attribute_name)["groups"] if object.send(attribute_name)["groups"].present?
+    list_of_groups = object.send(attribute_name)["groups"].present? ? object.send(attribute_name)["groups"] : []
   end
 
   # Provides a reference to the custom field instance
