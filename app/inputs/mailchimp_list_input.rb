@@ -5,7 +5,7 @@ class MailchimpListInput < SimpleForm::Inputs::CollectionCheckBoxesInput
   # Generate a checkbox list of groups
   #------------------------------------------------------------------------------
   def input
-    @builder.send("collection_check_boxes", attribute_name, collection, :id, :name, input_options, input_html_options)
+    @builder.send("collection_check_boxes", attribute_name, collection, :name, :name, input_options, input_html_options)
   end
 
   private
@@ -24,7 +24,8 @@ class MailchimpListInput < SimpleForm::Inputs::CollectionCheckBoxesInput
 
   # selected group ids
   def value
-    object.send(attribute_name)
+    list_of_groups = []
+    list_of_groups = object.send(attribute_name)["groups"] if object.send(attribute_name)["groups"].present?
   end
 
   # Provides a reference to the custom field instance
