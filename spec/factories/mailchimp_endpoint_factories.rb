@@ -5,10 +5,18 @@ FactoryGirl.define do
             merges: {
               EMAIL: "test@example.com",
               FNAME: "Bob",
-              LNAME: "Lee"
+              LNAME: "Lee",
+              INTERESTS: "group1, group2",
+              GROUPINGS: {"0"=>
+                {"id"=>"5641",
+                 "name"=>"Groups",
+                 "groups"=>"group1, group2"
+                }
+              }
             },
             new_email: "new_test@example.com",
-            old_email: "test@example.com"
+            old_email: "test@example.com",
+            list_id: "3e26bc072d"
          }}
     controller "ffcrm_endpoint/endpoints"
     action     "consume"
@@ -22,7 +30,14 @@ FactoryGirl.define do
             merges: {
               EMAIL: "ryan@example.com",
               FNAME: Faker::Name.first_name,
-              LNAME: Faker::Name.last_name
+              LNAME: Faker::Name.last_name,
+              INTERESTS: "group1, group2",
+              GROUPINGS: {"0"=>
+                {"id"=>"5641",
+                 "name"=>"Groups",
+                 "groups"=>"group1, group2"
+                }
+              }
             },
             new_email: Faker::Internet.email,
             old_email: "ryan@example.com"
