@@ -3,8 +3,7 @@ describe FfcrmMailchimp::MailchimpEndpoint do
 
   let(:data){ FactoryGirl.build :data}
   let(:response){ FactoryGirl.build :response}
-  let(:field_data){ { cf_custom_test_field: {"list_id" => "3e26bc072d",
-    "groups" =>  ["group1", "group2"]} } }
+  let(:field_data){ { cf_custom_test_field: ["group1", "group2"] } }
 
   describe "Mailchimp" do
 
@@ -111,7 +110,7 @@ describe FfcrmMailchimp::MailchimpEndpoint do
       it "should update user list and group detail in custom field" do
         contact = FactoryGirl.create(:contact, email: 'test@example.com')
         generate_custom_field_data
-        @mod.authenticate
+        @mod.profile_update
         record = Contact.find_by_email(data[:data][:email])
         record.should_not be_blank
         record.reload.cf_custom_test_field.should_not be_empty
@@ -133,7 +132,6 @@ describe FfcrmMailchimp::MailchimpEndpoint do
     field_group = FactoryGirl.create(:field_group, klass_name: "Contact")
     CustomFieldMailchimpList.create({"field_group_id"=> field_group.id,
       "label"=>"custom_test_field", "as"=>"mailchimp_list", "list_id"=>"3e26bc072d"})
-    @mod.stub(:customfield_value)
-      .and_return(field_data)
+    @mod.stub(:customfield_value).and_return(field_data)
   end
 end
