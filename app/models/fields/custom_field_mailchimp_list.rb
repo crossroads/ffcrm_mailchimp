@@ -36,7 +36,7 @@ class CustomFieldMailchimpList < CustomField
     settings['list_id'] = value
   end
 
-  # Serialize mailchimp lists as Arrays
+  # Serialize mailchimp lists as Hash
   #------------------------------------------------------------------------------
   def apply_serialization
     klass_name = self.field_group.try(:klass_name)
@@ -50,7 +50,6 @@ class CustomFieldMailchimpList < CustomField
 
     #
     # Override the mutator on the object class to ensure items are serialized correctly
-    # ["", "steve", "jim", "bob"] becomes ["steve", "jim", "bob"]
     attr = self.name
     unless klass.instance_methods.include?(:"#{attr}=")
       klass.class_eval <<-WRITER, __FILE__, __LINE__ + 1

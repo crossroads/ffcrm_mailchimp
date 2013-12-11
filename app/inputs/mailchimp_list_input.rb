@@ -5,7 +5,22 @@ class MailchimpListInput < SimpleForm::Inputs::CollectionCheckBoxesInput
   # Generate a checkbox list of groups
   #------------------------------------------------------------------------------
   def input
-    @builder.send("collection_check_boxes", attribute_name, collection, :name, :name, input_options, input_html_options)
+
+    out = "<br/>".html_safe
+
+    out << "<input id='#{attribute_name}[list_id]' name='#{attribute_name}[list_id]' type='checkbox' value='#{cf.list_id}'>".html_safe
+    out << "#{cf.list.name} (subscribe to entire list)<br /><dd><ul>".html_safe
+
+    out << @builder.collection_check_boxes(attribute_name, collection, :name, :name, input_options, input_html_options) do |b|
+      name = "#{attribute_name}[groups][#{b.object.name}]"
+      id = name.underscore
+      '<li>'.html_safe + b.check_box( id: id, name: name ) + b.label + '</li>'.html_safe
+    end
+
+    out << '</ul></dd>'.html_safe
+
+    out
+
   end
 
   private
