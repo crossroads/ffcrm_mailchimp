@@ -21,8 +21,10 @@ module FfcrmMailchimp
     # Ask the Mailchimp API for all available groups for a give list_id
     # Return a hash of groups with the group details and list id
     def self._groups(list_id)
-      groups = _config.lists.interest_groupings(id: list_id).first["groups"]
-      groups.map(&:stringify_keys).map {|grp| new(grp["name"], grp["name"], list_id)}
+      data = _config.lists.interest_groupings(id: list_id).first
+      groups = data["groups"]
+      groups.map(&:stringify_keys).map {|grp| new("#{data["id"]}_"+grp["name"],
+        grp["name"], list_id)}
     end
 
     def self._config

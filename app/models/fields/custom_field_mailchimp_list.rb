@@ -60,23 +60,36 @@ class CustomFieldMailchimpList < CustomField
     attr = self.name
     unless klass.instance_methods.include?(:"#{attr}=")
       klass.class_eval <<-WRITER, __FILE__, __LINE__ + 1
-
         # Override the mutator on the object class to ensure items are serialized correctly
-        # ["", "group1,group2,list_1235432"] becomes ["group1", "group2", "list_1235432"]
+        # ["", "group1_1525,group2_1525,list_1235432"] becomes [{"list_id"=> "1235432",
+        #   "groupings" => [{"group_id" => "1525", "groups"=>["group1","group2"]}]}]
         define_method "#{attr}=" do |value|
-          write_attribute( attr, value.join(',').split(',').reject(&:blank?) )
+          groups, group_id, list_id, result = [], "", "", {}
+          data = value.join(',').split(',').reject(&:blank?)
+          data.map{|val|
+            if val.starts_with?('list_')
+              list_id = val.split('_')[1]
+              result = result.merge("list_id"=> list_id) unless list_id.blank?
+            else
+              groups << val.split('_')[1]
+              group_id = val.split('_')[0] if group_id.blank?
+            end
+          }
+          result = [result.merge({"groupings" => [{"group_id" => group_id,
+            "groups"=>groups}]})] unless groups.blank?
+          write_attribute( attr, result ) unless result.blank?
         end
 
         # Return the list if it is checked
         # ["group1", "group2", "list_1235432"] returns ["list_1235432"] or []
         define_method "#{attr}_list" do
-          read_attribute(attr).select{|v| v.starts_with?('list_')}.compact
+          read_attribute(attr).first["list_id"] unless read_attribute(attr).first.blank?
         end
 
         # Return the groups that are checked
         # ["group1", "group2", "list_1235432"] returns ["group1", "group2"]
         define_method "#{attr}_groups" do
-          read_attribute(attr).reject{|v| v.starts_with?('list_')}.compact
+          read_attribute(attr).first["groupings"].first["groups"] unless read_attribute(attr).first.blank?
         end
 
       WRITER
