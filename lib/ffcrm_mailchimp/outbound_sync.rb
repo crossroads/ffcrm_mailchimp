@@ -19,17 +19,18 @@ module FfcrmMailchimp
     def process
       list_subscriptions_changes.each do |column|
         custom_field_value = @record.send column
-        list_id = custom_field_value.first["list_id"]
-        group_id = custom_field_value.first["groupings"].first["group_id"]
-        groups = custom_field_value.first["groupings"].first["groups"]
         if custom_field_value.present?
+          list_id = custom_field_value.first["list_id"]
+          group_id = custom_field_value.first["groupings"].first["group_id"]
+          groups = custom_field_value.first["groupings"].first["groups"]
           if !is_subscribed_mailchimp_user(list_id, @record.email)
             subscribe_to_mailchimp_group(list_id, @record.email, group_id, groups) #new contact
           elsif @record.send "#{column}_changed?"
             update_subscription_to_mailchimp(list_id, @record.email, group_id, groups)
           end
         else
-          unsubscribe_from_mailchimp_group
+          list_id = @record.send(column+"_was").first["list_id"]
+          unsubscribe_from_mailchimp_group(list_id, @record.email)
         end
       end
 
@@ -56,9 +57,9 @@ module FfcrmMailchimp
           groupings: [{id: group_id, groups: groups }]}, :double_optin => false})
     end
 
-    def unsubscribe_from_mailchimp_group
-      (Config.new.mailchimp_api).lists.unsubscribe(id: "1f1b028b64",
-        email: {email: "sunil.sharma@kiprosh.com"}, merge_vars: {groupings: [{name: "Test Group", groups: ["group 3"] }]})
+    def unsubscribe_from_mailchimp_group(list_id, email)
+      (Config.new.mailchimp_api).lists.unsubscribe(id: list_id,
+        email: {email: email})
     end
 
     def update_subscription_to_mailchimp(list_id, email, group_id, groups)

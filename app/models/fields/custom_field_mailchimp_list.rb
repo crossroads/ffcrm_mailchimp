@@ -75,9 +75,10 @@ class CustomFieldMailchimpList < CustomField
               group_id = val.split('_')[0] if group_id.blank?
             end
           }
-          result = [result.merge({"groupings" => [{"group_id" => group_id,
-            "groups"=>groups}]})] unless groups.blank?
-          write_attribute( attr, result ) unless result.blank?
+          result = result.merge({"groupings" => [{"group_id" => group_id,
+            "groups"=>groups}]}) unless groups.blank?
+          cf_data = result.blank? ? [] : [result]
+          write_attribute( attr, cf_data)
         end
 
         # Return the list if it is checked
