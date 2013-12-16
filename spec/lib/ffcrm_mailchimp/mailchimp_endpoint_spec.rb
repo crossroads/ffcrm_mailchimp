@@ -3,6 +3,7 @@ describe FfcrmMailchimp::MailchimpEndpoint do
 
   let(:data){ FactoryGirl.build :data}
   let(:response){ FactoryGirl.build :response}
+  let(:field_data){ { cf_custom_test_field: ["group1", "group2"] } }
 
   describe "Mailchimp" do
 
@@ -10,11 +11,7 @@ describe FfcrmMailchimp::MailchimpEndpoint do
 
       before(:each) do
         Contact.delete_all
-        hash = data.merge({type: "profile"})
-        FfcrmMailchimp::Config.any_instance.stub_chain('api_key').
-          and_return("1f443fda6e6fab633b8509asdsdhga34234-us3")
-        param = FfcrmMailchimp::InboundSync.new(hash)
-        @mod = FfcrmMailchimp::MailchimpEndpoint.new(param)
+        @mod = generate_response("profile")
       end
 
       context "authenticate" do
@@ -33,47 +30,17 @@ describe FfcrmMailchimp::MailchimpEndpoint do
 
       it "should update profile of user" do
         FactoryGirl.create(:contact, email: "test@example.com")
-        @mod.authenticate
+        @mod.profile_update
         record = Contact.find_by_email("test@example.com")
         record.first_name.should eq "Bob"
         record.last_name.should eq "Lee"
       end
     end
 
-    describe "User Email" do
-
-      before(:each) do
-        Contact.delete_all
-        hash = data.merge({type: "upemail"})
-        FfcrmMailchimp::Config.any_instance.stub_chain('api_key').
-          and_return("1f443fda6e6fab633b8509asdsdhga34234-us3")
-        param = FfcrmMailchimp::InboundSync.new(hash)
-        @mod = FfcrmMailchimp::MailchimpEndpoint.new(param)
-        FactoryGirl.create(:contact, email: "test@example.com", first_name: "Stanley")
-      end
-
-      it "should update user email if email is updated " do
-        @mod.authenticate
-        record = Contact.where(email: "new_test@example.com", first_name: "Stanley")
-        record.first.email.should eq "new_test@example.com"
-      end
-
-      it "should not update user email_id if new email_id already exists" do
-        FactoryGirl.create(:contact, email: "new_test@example.com")
-        @mod.authenticate
-        record = Contact.where(email: "test@example.com")
-        record.should_not be_blank
-      end
-    end
-
     describe "Subscribe new user" do
 
       before(:each) do
-        hash = response.merge({type: "subscribe"})
-        FfcrmMailchimp::Config.any_instance.stub_chain('api_key').
-          and_return("1f443fda6e6fab633b8509asdsdhga34234-us3")
-        param = FfcrmMailchimp::InboundSync.new(hash)
-        @mod = FfcrmMailchimp::MailchimpEndpoint.new(param)
+        @mod = generate_response("subscribe")
       end
 
       it "should create new user" do
@@ -93,5 +60,78 @@ describe FfcrmMailchimp::MailchimpEndpoint do
         contact.count.should eq 1
       end
     end
+
+    describe "User Email" do
+
+      before(:each) do
+        Contact.delete_all
+        @mod = generate_response("upemail")
+        FactoryGirl.create(:contact, email: "test@example.com", first_name: "Stanley")
+      end
+
+      it "should update user email if email is updated " do
+        @mod.authenticate
+        record = Contact.where(email: "new_test@example.com", first_name: "Stanley")
+        record.first.email.should eq "new_test@example.com"
+      end
+
+      it "should not update user email_id if new email_id already exists" do
+        FactoryGirl.create(:contact, email: "new_test@example.com")
+        @mod.authenticate
+        record = Contact.where(email: "test@example.com")
+        record.should_not be_blank
+      end
+    end
+
+    describe "Unsubscribe User" do
+
+      before(:each) do
+        Contact.delete_all
+        @mod = generate_response("unsubscribe")
+      end
+
+      it "should unsubscribe user and update custom field value" do
+        contact = FactoryGirl.create(:contact, email: 'test@example.com',
+          cf_custom_test_field: ["group1", "group2"])
+        generate_custom_field_data
+        record = Contact.find_by_email(data[:data][:email])
+        @mod.unsubscribe.should be_true
+        record.reload.cf_custom_test_field.should be_empty
+      end
+    end
+
+    describe "Mailchimp List" do
+
+      before(:each) do
+        Contact.delete_all
+        @mod = generate_response("profile")
+      end
+
+      it "should update user list and group detail in custom field" do
+        contact = FactoryGirl.create(:contact, email: 'test@example.com')
+        generate_custom_field_data
+        @mod.profile_update
+        record = Contact.find_by_email(data[:data][:email])
+        record.should_not be_blank
+        record.reload.cf_custom_test_field.should_not be_empty
+      end
+    end
+
+  end
+
+  def generate_response(response_type)
+    hash = response_type == "subscribe" ? response.merge({type: response_type}) : data.merge({type: response_type})
+    FfcrmMailchimp::Config.any_instance.stub_chain('api_key').
+      and_return("1f443fda6e6fab633b8509asdsdhga34234-us3")
+    param = FfcrmMailchimp::InboundSync.new(hash)
+    data = FfcrmMailchimp::MailchimpEndpoint.new(param)
+    return data
+  end
+
+  def generate_custom_field_data
+    field_group = FactoryGirl.create(:field_group, klass_name: "Contact")
+    CustomFieldMailchimpList.create({"field_group_id"=> field_group.id,
+      "label"=>"custom_test_field", "as"=>"mailchimp_list", "list_id"=>"3e26bc072d"})
+    @mod.stub(:customfield_value).and_return(field_data)
   end
 end
