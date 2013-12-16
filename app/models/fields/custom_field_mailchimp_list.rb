@@ -90,7 +90,7 @@ class CustomFieldMailchimpList < CustomField
         # Return the groups that are checked
         # ["group1", "group2", "list_1235432"] returns ["group1", "group2"]
         define_method "#{attr}_groups" do
-          read_attribute(attr).first["groupings"].first["groups"] unless read_attribute(attr).first.blank?
+          read_attribute(attr).first["groupings"].first["groups"] if(read_attribute(attr).first.present? && read_attribute(attr).first["groupings"].present?)
         end
 
       WRITER

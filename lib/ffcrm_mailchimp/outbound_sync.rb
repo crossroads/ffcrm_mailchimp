@@ -20,9 +20,12 @@ module FfcrmMailchimp
       list_subscriptions_changes.each do |column|
         custom_field_value = @record.send column
         if custom_field_value.present?
-          list_id = custom_field_value.first["list_id"]
-          group_id = custom_field_value.first["groupings"].first["group_id"]
-          groups = custom_field_value.first["groupings"].first["groups"]
+          list_id = Field.where("name = ?", column).first.settings[:list_id]
+          unless custom_field_value.first["groupings"].blank?
+            group_id = custom_field_value.first["groupings"].first["group_id"]
+            groups = custom_field_value.first["groupings"].first["groups"]
+          end
+
           if !is_subscribed_mailchimp_user(list_id, @record.email)
             subscribe_to_mailchimp_group(list_id, @record.email, group_id, groups) #new contact
           elsif @record.send "#{column}_changed?"
@@ -63,8 +66,6 @@ module FfcrmMailchimp
     end
 
     def update_subscription_to_mailchimp(list_id, email, group_id, groups)
-      # (Config.new.mailchimp_api).lists.update_member(id: "1f1b028b64",
-      #   email: {email: "sunil.sharma@kiprosh.com"}, merge_vars: {groupings: [{name: "Test Group", groups: ["group 3"] }]})
       (Config.new.mailchimp_api).lists.subscribe({:id => list_id, :email => {:email => email},
         :merge_vars => {:FNAME => @record.first_name, :LNAME => @record.last_name,
           groupings: [{id: group_id, groups: groups }]}, :update_existing => "true", :double_optin => false})
