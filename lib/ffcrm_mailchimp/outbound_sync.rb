@@ -32,10 +32,8 @@ module FfcrmMailchimp
             update_subscription_to_mailchimp(list_id, @record.email, group_id, groups)
           end
         else
-          debugger
           list_id = @record.send(column+"_was").first["list_id"]
           if is_subscribed_mailchimp_user(list_id, @record.email)
-            debugger
             unsubscribe_from_mailchimp_group(list_id, @record.email)
           end
         end
