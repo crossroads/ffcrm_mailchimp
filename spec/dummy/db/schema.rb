@@ -169,6 +169,7 @@ ActiveRecord::Schema.define(:version => 20121221033947) do
     t.string   "background_info"
     t.string   "skype",            :limit => 128
     t.text     "subscribed_users"
+    t.text     "custom_field"
   end
 
   add_index "contacts", ["assigned_to"], :name => "index_contacts_on_assigned_to"
