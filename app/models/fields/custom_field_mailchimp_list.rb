@@ -36,7 +36,7 @@ class CustomFieldMailchimpList < CustomField
     settings['list_id'] = value
   end
 
-  # Serialize mailchimp lists as Arrays
+  # Serialize mailchimp lists as Array
   #------------------------------------------------------------------------------
   def apply_serialization
     klass_name = self.field_group.try(:klass_name)
@@ -44,23 +44,57 @@ class CustomFieldMailchimpList < CustomField
     klass = klass_name.constantize
 
     if !klass.serialized_attributes.keys.include?(self.name)
-      klass.serialize(self.name.to_sym, Hash)
+      klass.serialize(self.name.to_sym, Array)
       Rails.logger.debug("FfcrmMailchimp: Serializing #{self.name} as Array for #{klass}.")
     end
 
     #
-    # Override the mutator on the object class to ensure items are serialized correctly
-    # ["", "steve", "jim", "bob"] becomes ["steve", "jim", "bob"]
+    # We store the list and group data as an Array on the custom field
+    # E.g. ["group1", "group2", "list_1235432"]
+    #
+    # We define methods on the klass related to the custom field so, for example,
+    # if a custom field is named 'cf_newsletter' then the following methods are defined:
+    # contact.cf_newsletter=       - takes checkbox input and serializes into an array
+    # contact.cf_newsletter_list   - returns the list if it is checked
+    # contact.cf_newsletter_groups - returns the groups that have been checked
     attr = self.name
     unless klass.instance_methods.include?(:"#{attr}=")
       klass.class_eval <<-WRITER, __FILE__, __LINE__ + 1
-        define_method "list_with_group" do |val|
-          {"list_id" => "#{list_id}", "groups" => val} if val.present?
-        end
+        # Override the mutator on the object class to ensure items are serialized correctly
+        # ["", "group1_1525,group2_1525,list_1235432"] becomes [{"list_id"=> "1235432",
+        #   "groupings" => [{"group_id" => "1525", "groups"=>["group1","group2"]}]}]
         define_method "#{attr}=" do |value|
-          write_attribute( attr, list_with_group(value.reject(&:blank?)) )
+          groups, group_id, list_id, result = [], "", "", {}
+          data = value.join(',').split(',').reject(&:blank?)
+          data.map{|val|
+            if val.starts_with?('list_')
+              list_id = val.split('_')[1]
+              result = result.merge("list_id"=> list_id) unless list_id.blank?
+            else
+              groups << val.split('_')[1]
+              group_id = val.split('_')[0] if group_id.blank?
+            end
+          }
+          result = result.merge({"groupings" => [{"group_id" => group_id,
+            "groups"=>groups}]}) unless groups.blank?
+          cf_data = result.blank? ? [] : [result]
+          write_attribute( attr, cf_data)
         end
+
+        # Return the list if it is checked
+        # ["group1", "group2", "list_1235432"] returns ["list_1235432"] or []
+        define_method "#{attr}_list" do
+          read_attribute(attr).first["list_id"] unless read_attribute(attr).first.blank?
+        end
+
+        # Return the groups that are checked
+        # ["group1", "group2", "list_1235432"] returns ["group1", "group2"]
+        define_method "#{attr}_groups" do
+          read_attribute(attr).first["groupings"].first["groups"] if(read_attribute(attr).first.present? && read_attribute(attr).first["groupings"].present?)
+        end
+
       WRITER
     end
+
   end
 end
