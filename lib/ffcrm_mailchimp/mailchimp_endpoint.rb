@@ -50,7 +50,7 @@ class FfcrmMailchimp::MailchimpEndpoint < FfcrmEndpoint::Endpoint
   def unsubscribe
     value = customfield_value
     contact = Contact.find_by_email(params[:data][:email])
-    unless(contact.blank? && value.blank?)
+    unless(contact.blank? || value.blank?)
       value[value.map{|key,value| key}[0]] = []
       contact.update_attributes(value)
       contact.save
