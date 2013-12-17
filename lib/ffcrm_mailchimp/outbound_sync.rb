@@ -26,14 +26,18 @@ module FfcrmMailchimp
             groups = custom_field_value.first["groupings"].first["groups"]
           end
 
-          if !is_subscribed_mailchimp_user(list_id, @record.email)
+          if !is_a_mailchimp_user(list_id, @record.email)
             subscribe_to_mailchimp_group(list_id, @record.email, group_id, groups) #new contact
           elsif @record.send "#{column}_changed?"
             update_subscription_to_mailchimp(list_id, @record.email, group_id, groups)
           end
         else
+          debugger
           list_id = @record.send(column+"_was").first["list_id"]
-          unsubscribe_from_mailchimp_group(list_id, @record.email)
+          if is_subscribed_mailchimp_user(list_id, @record.email)
+            debugger
+            unsubscribe_from_mailchimp_group(list_id, @record.email)
+          end
         end
       end
 
@@ -48,11 +52,17 @@ module FfcrmMailchimp
       end
     end
     #Check whether this email exists or  not?
-    def is_subscribed_mailchimp_user(list_id, email)
+    def is_a_mailchimp_user(list_id, email)
       (Config.new.mailchimp_api).lists.member_info({id: list_id,
         emails: [{email:email}]})["error_count"].zero?
       #If exists then check which all groups are active if selected it not available then update the contact
     end
+    def is_subscribed_mailchimp_user(list_id, email)
+      (Config.new.mailchimp_api).lists.member_info({id: list_id,
+        emails: [{email:email}]})["data"].first["status"] == "subscribed"
+      #If exists then check which all groups are active if selected it not available then update the contact
+    end
+
 
     def subscribe_to_mailchimp_group(list_id, email, group_id, groups)
       (Config.new.mailchimp_api).lists.subscribe({:id => list_id, :email => {:email => email},
