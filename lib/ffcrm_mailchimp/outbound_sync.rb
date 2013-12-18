@@ -17,6 +17,26 @@ module FfcrmMailchimp
 
     # Determine if we need to send changes to Mailchimp.
     def process
+      list_subscriptions_changes.each do |column|
+        custom_field_value = @record.send column
+        if custom_field_value.present?
+          list_id = Field.where("name = ?", column).first.settings[:list_id]
+          unless custom_field_value.first["groupings"].blank?
+            group_id = custom_field_value.first["groupings"].first["group_id"]
+            groups = custom_field_value.first["groupings"].first["groups"]
+          end
+
+          if !is_subscribed_mailchimp_user(list_id, @record.email)
+            subscribe_to_mailchimp_group(list_id, @record.email, group_id, groups) #new contact
+          elsif @record.send "#{column}_changed?"
+            update_subscription_to_mailchimp(list_id, @record.email, group_id, groups)
+          end
+        else
+          list_id = @record.send(column+"_was").first["list_id"]
+          unsubscribe_from_mailchimp_group(list_id, @record.email)
+        end
+      end
+
       if email_changes.present? or list_subscriptions_changes.present?
         synchronise!
         #~ TODO
@@ -28,9 +48,27 @@ module FfcrmMailchimp
       end
     end
     #Check whether this email exists or  not?
-    def is_subscribed_mailchimp_user
-      # (Config.new.mailchimp_api).lists.member_info({id: "80d6029b98",emails: [{email:"shefaly16@gmail.com"}]})
+    def is_subscribed_mailchimp_user(list_id, email)
+      (Config.new.mailchimp_api).lists.member_info({id: list_id,
+        emails: [{email:email}]})["error_count"].zero?
       #If exists then check which all groups are active if selected it not available then update the contact
+    end
+
+    def subscribe_to_mailchimp_group(list_id, email, group_id, groups)
+      (Config.new.mailchimp_api).lists.subscribe({:id => list_id, :email => {:email => email},
+        :merge_vars => {:FNAME => @record.first_name, :LNAME => @record.last_name,
+          groupings: [{id: group_id, groups: groups }]}, :double_optin => false})
+    end
+
+    def unsubscribe_from_mailchimp_group(list_id, email)
+      (Config.new.mailchimp_api).lists.unsubscribe(id: list_id,
+        email: {email: email})
+    end
+
+    def update_subscription_to_mailchimp(list_id, email, group_id, groups)
+      (Config.new.mailchimp_api).lists.subscribe({:id => list_id, :email => {:email => email},
+        :merge_vars => {:FNAME => @record.first_name, :LNAME => @record.last_name,
+          groupings: [{id: group_id, groups: groups }]}, :update_existing => "true", :double_optin => false})
     end
 
     private
@@ -46,9 +84,11 @@ module FfcrmMailchimp
     # Either nil or an array ['listA', 'listB']
     def list_subscriptions_changes
       # fields is the list of mailchimp list fields that we're interested in checking for changes.
+      fields = []
       changes = Field.where(as: 'mailchimp_list').collect do |field|
-        @record.send("#{field.name}_change")
-      end.compact
+        fields << field.name if @record.send("#{field.name}_changed?")
+      end
+      return fields
     end
 
     # send updates to mailchimp
