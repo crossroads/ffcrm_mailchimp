@@ -13,8 +13,8 @@ class MailchimpListInput < SimpleForm::Inputs::CollectionCheckBoxesInput
     out << "<input id='#{id}' name='#{name}' type='checkbox' value='list_#{cf.list_id}' #{list_checked? ? 'checked=\'checked\'' : ''} >".html_safe
     out << "<label for='#{id}'>#{cf.list.name} (subscribe to entire list)</label><br /><dd><ul>".html_safe
 
-    out << @builder.collection_check_boxes(attribute_name, collection, :name, :name, input_options, input_html_options) do |b|
-      '<li>'.html_safe + b.check_box + b.label + '</li>'.html_safe
+    out << @builder.collection_check_boxes(attribute_name, collection, :id, :name, input_options, input_html_options) do |b|
+      '<li>'.html_safe + b.check_box(:checked => group_checked(b)) + b.label + '</li>'.html_safe
     end
 
     out << '</ul></dd>'.html_safe
@@ -38,7 +38,14 @@ class MailchimpListInput < SimpleForm::Inputs::CollectionCheckBoxesInput
   #
   # true if the list itself is already checked
   def list_checked?
-    object.send("#{attribute_name}_list").any?
+    object.send("#{attribute_name}_list").present?
+  end
+
+  # true if the group is checked
+  def group_checked(obj)
+    value = object.send("#{attribute_name}_groups")
+    checkbox_present =  (value.include? obj.object.name) unless value.blank?
+    return checkbox_present ? "checked" : nil
   end
 
 end

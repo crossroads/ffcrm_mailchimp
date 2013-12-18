@@ -50,7 +50,7 @@ class FfcrmMailchimp::MailchimpEndpoint < FfcrmEndpoint::Endpoint
   def unsubscribe
     value = customfield_value
     contact = Contact.find_by_email(params[:data][:email])
-    unless(contact.blank? && value.blank?)
+    unless(contact.blank? || value.blank?)
       value[value.map{|key,value| key}[0]] = []
       contact.update_attributes(value)
       contact.save
@@ -58,14 +58,19 @@ class FfcrmMailchimp::MailchimpEndpoint < FfcrmEndpoint::Endpoint
   end
 
   def customfield_value
-    list_id_present = Field.select("settings").where(as: 'mailchimp_list').map{|list| list.settings[:list_id]}.
-      include? params[:data][:list_id]
-    list_name = FfcrmMailchimp::List.get(params[:data][:list_id]).name unless list_id_present.blank?
-    if list_name
-      column_name = 'cf_' + list_name.downcase.gsub(/[^a-z0-9]+/, '_')
-      column = Contact.column_names.include? column_name if list_name
+    parameter = {}
+    custom_field = Field.where("fields.as LIKE ? AND settings LIKE ?",
+      "%mailchimp_list%", "%#{params[:data][:list_id]}%")
+    unless custom_field.blank?
+      value =[]
+      value << "list_#{params[:data][:list_id]}"
+      unless params[:data][:merges][:INTERESTS].blank?
+        group_id = params[:data][:merges][:GROUPINGS]["0"][:id]
+        groups = params[:data][:merges][:GROUPINGS]["0"]["groups"].split(",").collect(&:strip).map{|e| "#{group_id}_"+e}
+        value << groups
+      end
+      parameter = { custom_field.first.name => value.flatten }
     end
-    parameter = { "#{column_name}" => [params[:data][:merges][:INTERESTS]] } if(column.present? && params[:data][:merges][:INTERESTS].present?)
     return parameter
   end
 
