@@ -3,7 +3,7 @@ describe FfcrmMailchimp::MailchimpEndpoint do
 
   let(:data){ FactoryGirl.build :data}
   let(:response){ FactoryGirl.build :response}
-  let(:field_data){ { cf_custom_test_field: ["group1", "group2"] } }
+  let(:field_data){ { custom_field: ["group1", "group2"] } }
 
   describe "Mailchimp" do
 
@@ -88,15 +88,15 @@ describe FfcrmMailchimp::MailchimpEndpoint do
       before(:each) do
         Contact.delete_all
         @mod = generate_response("unsubscribe")
+        @mod.stub(:customfield_value).and_return(field_data)
       end
 
       it "should unsubscribe user and update custom field value" do
         contact = FactoryGirl.create(:contact, email: 'test@example.com',
-          cf_custom_test_field: ["group1", "group2"])
-        generate_custom_field_data
+          custom_field: ["group1", "group2"])
         record = Contact.find_by_email(data[:data][:email])
         @mod.unsubscribe.should be_true
-        record.reload.cf_custom_test_field.should be_empty
+        record.reload.custom_field.should eq "--- []\n"
       end
     end
 
@@ -105,15 +105,15 @@ describe FfcrmMailchimp::MailchimpEndpoint do
       before(:each) do
         Contact.delete_all
         @mod = generate_response("profile")
+        @mod.stub(:customfield_value).and_return(field_data)
       end
 
       it "should update user list and group detail in custom field" do
-        contact = FactoryGirl.create(:contact, email: 'test@example.com')
-        generate_custom_field_data
+        contact = FactoryGirl.create(:contact, email: 'test@example.com',custom_field: ["group1", "group2"])
         @mod.profile_update
         record = Contact.find_by_email(data[:data][:email])
         record.should_not be_blank
-        record.reload.cf_custom_test_field.should_not be_empty
+        record.custom_field.should be_present
       end
     end
 
@@ -126,12 +126,5 @@ describe FfcrmMailchimp::MailchimpEndpoint do
     param = FfcrmMailchimp::InboundSync.new(hash)
     data = FfcrmMailchimp::MailchimpEndpoint.new(param)
     return data
-  end
-
-  def generate_custom_field_data
-    field_group = FactoryGirl.create(:field_group, klass_name: "Contact")
-    CustomFieldMailchimpList.create({"field_group_id"=> field_group.id,
-      "label"=>"custom_test_field", "as"=>"mailchimp_list", "list_id"=>"3e26bc072d"})
-    @mod.stub(:customfield_value).and_return(field_data)
   end
 end
