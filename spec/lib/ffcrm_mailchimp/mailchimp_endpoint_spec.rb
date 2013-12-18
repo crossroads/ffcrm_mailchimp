@@ -127,11 +127,4 @@ describe FfcrmMailchimp::MailchimpEndpoint do
     data = FfcrmMailchimp::MailchimpEndpoint.new(param)
     return data
   end
-
-  # def generate_custom_field_data
-  #   field_group = FactoryGirl.create(:field_group, klass_name: "Contact")
-  #   CustomFieldMailchimpList.create({"field_group_id"=> field_group.id,
-  #     "label"=>"custom_test_field", "as"=>"mailchimp_list", "list_id"=>"3e26bc072d"})
-  #   @mod.stub(:customfield_value).and_return(field_data)
-  # end
 end
