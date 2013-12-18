@@ -17,23 +17,23 @@ class FfcrmMailchimp::MailchimpEndpoint < FfcrmEndpoint::Endpoint
   end
 
   def subscribe
-    value = customfield_value
+    cf_value = customfield_value
     contact = Contact.find_by_email(params[:data][:email])
     if contact.blank?
       record = Contact.create(first_name: params[:data][:merges][:FNAME],
         last_name: params[:data][:merges][:LNAME],email: params[:data][:merges][:EMAIL])
-      record.update_attributes(value) unless value.blank?
+      record.update_attributes(cf_value) unless cf_value.blank?
       record.save
     end
   end
 
   def profile_update
-    value = customfield_value
+    cf_value = customfield_value
     contact = Contact.find_by_email(params[:data][:email])
     unless contact.blank?
       contact.update_attributes(first_name: params[:data][:merges][:FNAME],
         last_name: params[:data][:merges][:LNAME])
-      contact.update_attributes(value) unless value.blank?
+      contact.update_attributes(cf_value) unless cf_value.blank?
       contact.save
     end
   end
@@ -48,11 +48,11 @@ class FfcrmMailchimp::MailchimpEndpoint < FfcrmEndpoint::Endpoint
   end
 
   def unsubscribe
-    value = customfield_value
+    cf_value = customfield_value
     contact = Contact.find_by_email(params[:data][:email])
-    unless(contact.blank? || value.blank?)
-      value[value.map{|key,value| key}[0]] = []
-      contact.update_attributes(value)
+    unless(contact.blank? || cf_value.blank?)
+      cf_value[cf_value.map{|key,value| key}[0]] = []
+      contact.update_attributes(cf_value)
       contact.save
     end
   end
@@ -62,14 +62,14 @@ class FfcrmMailchimp::MailchimpEndpoint < FfcrmEndpoint::Endpoint
     custom_field = Field.where("fields.as LIKE ? AND settings LIKE ?",
       "%mailchimp_list%", "%#{params[:data][:list_id]}%")
     unless custom_field.blank?
-      value =[]
-      value << "list_#{params[:data][:list_id]}"
+      cf_val =[]
+      cf_val << "list_#{params[:data][:list_id]}"
       unless params[:data][:merges][:INTERESTS].blank?
         group_id = params[:data][:merges][:GROUPINGS]["0"][:id]
         groups = params[:data][:merges][:GROUPINGS]["0"]["groups"].split(",").collect(&:strip).map{|e| "#{group_id}_"+e}
-        value << groups
+        cf_val << groups
       end
-      parameter = { custom_field.first.name => value.flatten }
+      parameter = { custom_field.first.name => cf_val.flatten }
     end
     return parameter
   end
