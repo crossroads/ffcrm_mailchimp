@@ -4,6 +4,7 @@ describe FfcrmMailchimp::MailchimpEndpoint do
   let(:data){ FactoryGirl.build :data}
   let(:response){ FactoryGirl.build :response}
   let(:field_data){ { custom_field: ["group1", "group2"] } }
+  let(:cf_value){[{"list_id"=> "1235432", "groupings" => [{"group_id" => "1525", "groups"=>["group1","group2"]}]}]}
 
   describe "Mailchimp" do
 
@@ -41,6 +42,7 @@ describe FfcrmMailchimp::MailchimpEndpoint do
 
       before(:each) do
         @mod = generate_response("subscribe")
+        @mod.stub(:customfield_value).and_return(field_data)
       end
 
       it "should create new user" do
@@ -59,10 +61,16 @@ describe FfcrmMailchimp::MailchimpEndpoint do
         record.count.should eq 1
         contact.count.should eq 1
       end
+
+      it "should not subscribe if customfield is not exist for list" do
+        @mod.stub(:customfield_value).and_return(field_data)
+        contact = FactoryGirl.create(:contact, email: 'test@example.com')
+        record = Contact.find_by_email(data[:data][:email])
+        record.reload.custom_field.should be_blank
+      end
     end
 
     describe "User Email" do
-
       before(:each) do
         Contact.delete_all
         @mod = generate_response("upemail")
@@ -93,7 +101,7 @@ describe FfcrmMailchimp::MailchimpEndpoint do
 
       it "should unsubscribe user and update custom field value" do
         contact = FactoryGirl.create(:contact, email: 'test@example.com',
-          custom_field: ["group1", "group2"])
+          custom_field: cf_value)
         record = Contact.find_by_email(data[:data][:email])
         @mod.unsubscribe.should be_true
         record.reload.custom_field.should eq "--- []\n"
@@ -109,7 +117,7 @@ describe FfcrmMailchimp::MailchimpEndpoint do
       end
 
       it "should update user list and group detail in custom field" do
-        contact = FactoryGirl.create(:contact, email: 'test@example.com',custom_field: ["group1", "group2"])
+        contact = FactoryGirl.create(:contact, email: 'test@example.com',custom_field: cf_value)
         @mod.profile_update
         record = Contact.find_by_email(data[:data][:email])
         record.should_not be_blank
