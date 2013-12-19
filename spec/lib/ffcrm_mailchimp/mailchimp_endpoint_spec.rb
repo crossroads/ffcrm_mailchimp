@@ -47,7 +47,7 @@ describe FfcrmMailchimp::MailchimpEndpoint do
 
       it "should create new user" do
         record = Contact.find_by_email(response[:data][:email])
-        @mod.authenticate
+        @mod.process
         contact = Contact.find_by_email(response[:data][:email])
         record.should be_blank
         contact.should_not be_blank
@@ -56,7 +56,7 @@ describe FfcrmMailchimp::MailchimpEndpoint do
 
       it "should not create duplicate record if user exists" do
         record = [ FactoryGirl.create(:contact, email: "ryan@example.com") ]
-        @mod.authenticate
+        @mod.process
         contact = Contact.where(email: response[:data][:email])
         record.count.should eq 1
         contact.count.should eq 1
@@ -78,14 +78,14 @@ describe FfcrmMailchimp::MailchimpEndpoint do
       end
 
       it "should update user email if email is updated " do
-        @mod.authenticate
+        @mod.process
         record = Contact.where(email: "new_test@example.com", first_name: "Stanley")
         record.first.email.should eq "new_test@example.com"
       end
 
       it "should not update user email_id if new email_id already exists" do
         FactoryGirl.create(:contact, email: "new_test@example.com")
-        @mod.authenticate
+        @mod.process
         record = Contact.where(email: "test@example.com")
         record.should_not be_blank
       end
