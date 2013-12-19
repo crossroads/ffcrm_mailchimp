@@ -6,13 +6,14 @@ class FfcrmMailchimp::MailchimpEndpoint < FfcrmEndpoint::Endpoint
 
   # incoming requests are processed here in an action controller
   def process
-    FfcrmMailchimp::InboundSync.process(data)
+    #~ FfcrmMailchimp::InboundSync.process(data)
+    set_paper_trail_user
+    webhook_response_type
   end
 
   # authenticate inbound webhooks from mailchimp must contain an api_key
   def authenticate
     api_key = FfcrmMailchimp.config.api_key
-    webhook_response_type
     api_key.present? && params[:api_key] == api_key
   end
 
@@ -74,6 +75,14 @@ class FfcrmMailchimp::MailchimpEndpoint < FfcrmEndpoint::Endpoint
     return parameter
   end
 
+  private
+
+  def data
+    # parse an IronMQ request
+    # CGI::parse(request.body.read)
+    params
+  end
+
   def webhook_response_type
     case params[:type]
     when "subscribe"
@@ -88,12 +97,10 @@ class FfcrmMailchimp::MailchimpEndpoint < FfcrmEndpoint::Endpoint
     end
   end
 
-  private
-
-  def data
-    # parse an IronMQ request
-    # CGI::parse(request.body.read)
-    params
+  # track changes against this user
+  def set_paper_trail_user
+    user_id = FfcrmMailchimp.config.user_id
+    PaperTrail.whodunnit = id if defined?(PaperTrail) and user_id.present? and User.where(id: user_id).any?
   end
 
 end

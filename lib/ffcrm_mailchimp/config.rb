@@ -25,6 +25,12 @@ module FfcrmMailchimp
     def mailchimp_api
       Gibbon::API.new(api_key)
     end
+
+    # the id of a CRM user that will be the 'mailchimp' user in Papertrail
+    def user_id
+      config.present? ? config[:user_id] : nil
+    end
+
   end
 
 end
