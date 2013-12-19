@@ -100,7 +100,7 @@ class FfcrmMailchimp::MailchimpEndpoint < FfcrmEndpoint::Endpoint
   # track changes against this user
   def set_paper_trail_user
     user_id = FfcrmMailchimp.config.user_id
-    PaperTrail.whodunnit = id if defined?(PaperTrail) and user_id.present? and User.where(id: user_id).any?
+    PaperTrail.whodunnit = user_id if defined?(PaperTrail) and user_id.present? and User.where(id: user_id).any?
   end
 
 end

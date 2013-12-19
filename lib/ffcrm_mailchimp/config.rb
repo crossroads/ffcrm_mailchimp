@@ -13,7 +13,10 @@ module FfcrmMailchimp
     #
     # Used in the admin section to apply settings
     def update!(options)
-      @config = Setting.ffcrm_mailchimp = { api_key: options[:api_key] }
+      @config = Setting.ffcrm_mailchimp = {
+        api_key: options[:api_key],
+        user_id: options[:user_id],
+      }
     end
 
     #

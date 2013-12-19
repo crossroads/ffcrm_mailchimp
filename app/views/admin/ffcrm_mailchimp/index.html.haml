@@ -14,6 +14,16 @@
         Api key:
         = text_field_tag 'api_key', @config.api_key, size: 30, required: true
 
+      %br
+      .label.top.req
+        Default user:
+        - user_options = options_from_collection_for_select(all_users, 'id', 'full_name', @config.user_id)
+        = select_tag('user_id', options_for_select(user_options), :class => 'chzn-select', :style => "width:160px")
+      %br
+        This is the default user for actions that occur via webhooks.
+        Not all webhooks provide 'user' information, in those cases, this user will own the operation.
+        It is recommended you create a Fat Free CRM user purely for this purpose.
+
       %p
       = submit_tag 'Save', name: 'update', style: "width:60px"
 
