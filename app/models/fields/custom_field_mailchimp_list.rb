@@ -64,24 +64,30 @@ class CustomFieldMailchimpList < CustomField
         # ["", "1525_group1,1525_group2,list_1235432"] becomes [{"list_id"=> "1235432",
         #   "groupings" => [{"group_id" => "1525", "groups"=>["group1","group2"]}]}]
         define_method "#{attr}=" do |value|
-          groups, group_id, list_id, result = [], "", "", {}
+          groups, group_id, result = [], "", {}
           data = value.join(',').split(',').reject(&:blank?)
-          data.map{|val|
-            if val.starts_with?('list_')
-              list_id = val.split('_')[1]
-              result = result.merge("list_id"=> list_id) unless list_id.blank?
-            elsif(val == "source_webhook")
-              result = result.merge("source"=> "webhook")
-            else
-              groups << val.split('_')[1]
-              group_id = val.split('_')[0] if group_id.blank?
-            end
-          }
+          result, groups, group_id = custom_field_data(data)
           result = result.merge("source"=> "ffcrm") unless(result["source"] == "webhook")
           result = result.merge({"groupings" => [{"group_id" => group_id,
             "groups"=>groups}]}) unless groups.blank?
           cf_data = result.blank? ? [] : [result]
           write_attribute( attr, cf_data)
+        end
+
+        define_method "custom_field_data" do |data|
+          info, g_data, g_id, list_id = {}, [], "", ""
+          data.map{|val|
+            if val.starts_with?('list_')
+              list_id = val.split('_')[1]
+              info = info.merge("list_id"=> list_id) unless list_id.blank?
+            elsif(val == "source_webhook")
+              info = info.merge("source"=> "webhook")
+            else
+              g_data << val.split('_')[1]
+              g_id = val.split('_')[0] if g_id.blank?
+            end
+          }
+          return info, g_data, g_id
         end
 
         # Return the list if it is checked
