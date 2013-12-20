@@ -70,11 +70,14 @@ class CustomFieldMailchimpList < CustomField
             if val.starts_with?('list_')
               list_id = val.split('_')[1]
               result = result.merge("list_id"=> list_id) unless list_id.blank?
+            elsif(val == "source_webhook")
+              result = result.merge("source"=> "webhook")
             else
               groups << val.split('_')[1]
               group_id = val.split('_')[0] if group_id.blank?
             end
           }
+          result = result.merge("source"=> "ffcrm") unless(result["source"] == "webhook")
           result = result.merge({"groupings" => [{"group_id" => group_id,
             "groups"=>groups}]}) unless groups.blank?
           cf_data = result.blank? ? [] : [result]
@@ -95,6 +98,5 @@ class CustomFieldMailchimpList < CustomField
 
       WRITER
     end
-
   end
 end

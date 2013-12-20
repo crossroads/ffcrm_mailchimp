@@ -19,13 +19,12 @@ module FfcrmMailchimp
     def process
       if email_changes.present? or list_subscriptions_changes.present?
         list_subscriptions_changes.each do |column|
-          custom_field_value = @record.send column
-          if custom_field_value.present?
-            list_id = Field.where("name = ?", column).first.settings[:list_id]
-            group_id, groups = grouping_details(custom_field_value.first["groupings"])
+          cf_value = @record.send column
+          list_id = Field.where("name = ?", column).first.settings[:list_id]
+          if(cf_value.first["source"] == "ffcrm" && (cf_value.first["list_id"].present? || cf_value.first["groupings"].present?))
+            group_id, groups = grouping_details(cf_value.first["groupings"])
             check_mailchimp_subscription(list_id, group_id, groups, column)
-          else
-            list_id = @record.send(column+"_was").first["list_id"]
+          elsif(cf_value.first["source"] == "ffcrm")
             unsubscribe_from_mailchimp_group(list_id, @record.email) if is_subscribed_mailchimp_user(list_id, @record.email)
           end
         end
@@ -47,7 +46,7 @@ module FfcrmMailchimp
     end
     def is_subscribed_mailchimp_user(list_id, email)
       (Config.new.mailchimp_api).lists.member_info({id: list_id,
-        emails: [{email:email}]})["data"].first["status"] == "subscribed"
+        emails: [{email:email}]})["data"].first["status"] == "subscribed" unless list_id.blank?
       #If exists then check which all groups are active if selected it not available then update the contact
     end
 

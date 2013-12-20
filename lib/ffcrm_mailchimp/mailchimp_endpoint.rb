@@ -65,6 +65,7 @@ class FfcrmMailchimp::MailchimpEndpoint < FfcrmEndpoint::Endpoint
     unless custom_field.blank?
       cf_val =[]
       cf_val << "list_#{params[:data][:list_id]}"
+      cf_val << "source_webhook"
       unless params[:data][:merges][:INTERESTS].blank?
         group_id = params[:data][:merges][:GROUPINGS]["0"][:id]
         groups = params[:data][:merges][:GROUPINGS]["0"]["groups"].split(",").collect(&:strip).map{|e| "#{group_id}_"+e}
