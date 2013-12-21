@@ -2,7 +2,10 @@ require 'spec_helper'
 
 describe FfcrmMailchimp::OutboundSync do
 
-  describe ".is_a_mailchimp_user" do
+  let(:params){ {email: 'test@example.com', custom_field: [{"list_id"=> "3e26bc072d",
+    "groupings" => [{"group_id" => "1525", "groups"=>["group1","group2"]}], "source"=> "ffcrm"}]} }
+
+  describe ".is_subscribed_mailchimp_user" do
 
     before(:each) do
       Contact.delete_all
@@ -10,29 +13,19 @@ describe FfcrmMailchimp::OutboundSync do
         with("3e26bc072d", "test@example.com", "1525", ["group1", "group2"]).and_return(nil)
     end
 
-    it "should check if user is mailchimp user" do
-      generate_custom_field_record
-      FfcrmMailchimp::OutboundSync.any_instance.should_receive(:is_a_mailchimp_user).
-        with("3e26bc072d", "test@example.com")
-      FactoryGirl.create(:contact, email: 'test@example.com', custom_field: [{"list_id"=> "3e26bc072d",
-        "groupings" => [{"group_id" => "1525", "groups"=>["group1","group2"]}]}])
-    end
-  end
-
-  describe ".is_subscribed_mailchimp_user" do
-
-    before(:each) do
-      Contact.delete_all
-      @contact = FactoryGirl.create(:contact, email: 'test@example.com',
-        custom_field: [{"list_id"=> "3e26bc072d", "groupings" => [{"group_id" => "1525",
-          "groups"=>["group1","group2"]}]}])
-    end
-
     it "should check if user is subscribed mailchimp user" do
       generate_custom_field_record
       FfcrmMailchimp::OutboundSync.any_instance.should_receive(:is_subscribed_mailchimp_user).
-        with("3e26bc072d", "test@example.com")
-      @contact.update_attributes(custom_field: [])
+        with("3e26bc072d", "test@example.com", "subscribe")
+      FactoryGirl.create(:contact, params)
+    end
+
+    it "should check if user already exist on mailchimp while unsubscribing" do
+      contact = FactoryGirl.create(:contact, params)
+      generate_custom_field_record
+      FfcrmMailchimp::OutboundSync.any_instance.should_receive(:is_subscribed_mailchimp_user).
+        with("3e26bc072d", "test@example.com", "unsubscribe")
+      contact.update_attributes(custom_field: [{"source"=> "ffcrm"}])
     end
   end
 
@@ -44,12 +37,11 @@ describe FfcrmMailchimp::OutboundSync do
 
     it "should subscribe user to mailchimp group" do
       generate_custom_field_record
-      FfcrmMailchimp::OutboundSync.any_instance.should_receive(:is_a_mailchimp_user).
-        with("3e26bc072d", "test@example.com").and_return(false)
+      FfcrmMailchimp::OutboundSync.any_instance.should_receive(:is_subscribed_mailchimp_user).
+        with("3e26bc072d", "test@example.com", "subscribe").and_return(false)
       FfcrmMailchimp::OutboundSync.any_instance.should_receive(:subscribe_to_mailchimp_group).
         with("3e26bc072d", "test@example.com", "1525", ["group1", "group2"])
-      FactoryGirl.create(:contact, email: 'test@example.com', custom_field: [{"list_id"=> "3e26bc072d",
-        "groupings" => [{"group_id" => "1525", "groups"=>["group1","group2"]}]}])
+      FactoryGirl.create(:contact, params)
     end
   end
 
@@ -61,12 +53,12 @@ describe FfcrmMailchimp::OutboundSync do
 
     it "should subscribe user to mailchimp list" do
       generate_custom_field_record
-      FfcrmMailchimp::OutboundSync.any_instance.should_receive(:is_a_mailchimp_user).
-        with("3e26bc072d", "test@example.com").and_return(false)
+      FfcrmMailchimp::OutboundSync.any_instance.should_receive(:is_subscribed_mailchimp_user).
+        with("3e26bc072d", "test@example.com", "subscribe").and_return(false)
       FfcrmMailchimp::OutboundSync.any_instance.should_receive(:subscribe_to_mailchimp_group).
         with("3e26bc072d", "test@example.com", nil, nil)
       FactoryGirl.create(:contact, email: 'test@example.com',
-        custom_field: [{"list_id"=> "3e26bc072d"}])
+        custom_field: [{"list_id"=> "3e26bc072d", "source"=> "ffcrm"}])
     end
   end
 
@@ -74,18 +66,16 @@ describe FfcrmMailchimp::OutboundSync do
 
     before(:each) do
       Contact.delete_all
-      @contact = FactoryGirl.create(:contact, email: 'test@example.com',
-        custom_field: [{"list_id"=> "3e26bc072d", "groupings" => [{"group_id" => "1525",
-          "groups"=>["group1","group2"]}]}])
+      @contact = FactoryGirl.create(:contact, params)
     end
 
     it "should unsubscribe user from mailchimp group" do
       generate_custom_field_record
-      FfcrmMailchimp::OutboundSync.any_instance.should_receive(:is_a_mailchimp_user).
-        with("3e26bc072d", "test@example.com").and_return(true)
+      FfcrmMailchimp::OutboundSync.any_instance.should_receive(:is_subscribed_mailchimp_user).
+        with("3e26bc072d", "test@example.com", "subscribe").and_return(true)
       FfcrmMailchimp::OutboundSync.any_instance.should_receive(:update_subscription_to_mailchimp).
         with("3e26bc072d", "test@example.com", nil, nil)
-      @contact.update_attributes(:custom_field => [{"list_id"=> "3e26bc072d"}])
+      @contact.update_attributes(:custom_field => [{"list_id"=> "3e26bc072d", "source"=> "ffcrm"}])
     end
   end
 
@@ -93,18 +83,16 @@ describe FfcrmMailchimp::OutboundSync do
 
     before(:each) do
       Contact.delete_all
-      @contact = FactoryGirl.create(:contact, email: 'test@example.com',
-        custom_field: [{"list_id"=> "3e26bc072d", "groupings" => [{"group_id" => "1525",
-          "groups"=>["group1","group2"]}]}])
+      @contact = FactoryGirl.create(:contact, params)
     end
 
     it "should unsubscribe user from mailchimp list" do
       generate_custom_field_record
       FfcrmMailchimp::OutboundSync.any_instance.should_receive(:is_subscribed_mailchimp_user).
-        with("3e26bc072d", "test@example.com").and_return(true)
+        with("3e26bc072d", "test@example.com", "unsubscribe").and_return(true)
       FfcrmMailchimp::OutboundSync.any_instance.should_receive(:unsubscribe_from_mailchimp_group).
         with("3e26bc072d", "test@example.com")
-      @contact.update_attributes(:custom_field => [])
+      @contact.update_attributes(:custom_field => [{"source"=> "ffcrm"}])
     end
   end
 
@@ -112,19 +100,17 @@ describe FfcrmMailchimp::OutboundSync do
 
     before(:each) do
       Contact.delete_all
-      @contact = FactoryGirl.create(:contact, email: 'test@example.com',
-        custom_field: [{"list_id"=> "3e26bc072d", "groupings" => [{"group_id" => "1525",
-          "groups"=>["group1","group2"]}]}])
+      @contact = FactoryGirl.create(:contact, params)
     end
 
     it "should update user details in mailchimp" do
       generate_custom_field_record
-      FfcrmMailchimp::OutboundSync.any_instance.should_receive(:is_a_mailchimp_user).
-        with("3e26bc072d", "test@example.com").and_return(true)
+      FfcrmMailchimp::OutboundSync.any_instance.should_receive(:is_subscribed_mailchimp_user).
+        with("3e26bc072d", "test@example.com", "subscribe").and_return(true)
       FfcrmMailchimp::OutboundSync.any_instance.should_receive(:update_subscription_to_mailchimp).
         with("3e26bc072d", "test@example.com", "1525", ["group1"])
       @contact.update_attributes(:custom_field => [{"list_id"=> "3e26bc072d",
-        "groupings" => [{"group_id" => "1525", "groups"=>["group1"]}]}])
+        "groupings" => [{"group_id" => "1525", "groups"=>["group1"]}], "source"=> "ffcrm"}])
     end
   end
 

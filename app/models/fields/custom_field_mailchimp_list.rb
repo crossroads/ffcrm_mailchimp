@@ -61,8 +61,8 @@ class CustomFieldMailchimpList < CustomField
     unless klass.instance_methods.include?(:"#{attr}=")
       klass.class_eval <<-WRITER, __FILE__, __LINE__ + 1
         # Override the mutator on the object class to ensure items are serialized correctly
-        # ["", "1525_group1,1525_group2,list_1235432"] becomes [{"list_id"=> "1235432",
-        #   "groupings" => [{"group_id" => "1525", "groups"=>["group1","group2"]}]}]
+        # ["", "1525_group1","1525_group2","list_1235432","source_webhook"] becomes [{"list_id"=> "1235432",
+        #   "source" => "webhook", groupings" => [{"group_id" => "1525", "groups"=>["group1","group2"]}]}]
         define_method "#{attr}=" do |value|
           groups, group_id, result = [], "", {}
           data = value.join(',').split(',').reject(&:blank?)

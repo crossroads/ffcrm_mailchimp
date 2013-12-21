@@ -3,8 +3,9 @@ describe FfcrmMailchimp::MailchimpEndpoint do
 
   let(:data){ FactoryGirl.build :data}
   let(:response){ FactoryGirl.build :response}
-  let(:field_data){ { custom_field: ["group1", "group2"] } }
-  let(:cf_value){[{"list_id"=> "1235432", "groupings" => [{"group_id" => "1525", "groups"=>["group1","group2"]}]}]}
+  let(:field_data){ { custom_field: ["group1", "group2", "source_webhook"] } }
+  let(:cf_value){[{"list_id"=> "1235432", "groupings" => [{"group_id" => "1525",
+    "groups"=>["group1","group2"]}], "source" => "webhook"}]}
 
   describe "Mailchimp" do
 
