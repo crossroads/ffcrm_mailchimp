@@ -1,4 +1,5 @@
 require 'ffcrm_mailchimp/list'
+require 'ffcrm_mailchimp/list_subscription'
 
 class CustomFieldMailchimpList < CustomField
 
