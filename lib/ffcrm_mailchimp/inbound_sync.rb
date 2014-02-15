@@ -73,7 +73,6 @@ module FfcrmMailchimp
       else
         old_contact.update_attributes( custom_field.name => [] )
       end
-
     end
 
     #
