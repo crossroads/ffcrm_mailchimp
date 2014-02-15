@@ -7,6 +7,12 @@ class CustomFieldMailchimpList < CustomField
   #------------------------------------------------------------------------------
   after_save { apply_serialization }
 
+  # Ensure a list is always selected
+  #------------------------------------------------------------------------------
+  validate do
+    errors.add(:list_id, "You must select a Mailchimp list.") if list_id.blank?
+  end
+
   # Renders the selected groups for this list
   #------------------------------------------------------------------------------
   def render(group_ids)
@@ -16,7 +22,24 @@ class CustomFieldMailchimpList < CustomField
   # Return all available mailchimp lists. Used in admin screen
   #------------------------------------------------------------------------------
   def collection
-    FfcrmMailchimp::List.all
+    all_lists = FfcrmMailchimp::List.all
+    all_lists.reject!{ |name, list_id| existing_list_ids_for_klass.include?(list_id) }
+    if list
+      # for edits, make sure we include our existing list
+      [[list.name, list.id]] + all_lists
+    else
+      all_lists
+    end
+  end
+
+  # Gets all the list ids that are currently defined in any field_group belonging to klass
+  # We use this to filter out the list on the admin screen so you can't use the list_id twice
+  #------------------------------------------------------------------------------
+  def existing_list_ids_for_klass
+    FieldGroup.where( klass_name: klass_name ).
+      map{ |fg| fg.fields }.flatten.
+      select{ |f| f.as == 'mailchimp_list' }.
+      map{ |f| f.settings['list_id'] }
   end
 
   # Returns the mailchimp list associated with this instance
