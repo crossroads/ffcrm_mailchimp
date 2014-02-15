@@ -173,7 +173,7 @@ describe FfcrmMailchimp::InboundSync do
       it "should unsubscribe" do
         Contact.should_receive(:find_by_email).with( email ).and_return( contact )
         contact.should_receive(:update_attributes) do |args|
-          expect(args["#{@cf.name}="] ).to eql( [] )
+          expect(args[ @cf.name ] ).to eql( [] )
         end
         sync.send(:unsubscribe)
       end

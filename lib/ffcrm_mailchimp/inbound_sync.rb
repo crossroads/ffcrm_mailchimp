@@ -77,7 +77,7 @@ module FfcrmMailchimp
     def unsubscribe
       contact = Contact.find_by_email( data.email )
       if contact.present?
-        contact.update_attributes("#{custom_field.name}=" => [])
+        contact.update_attributes( custom_field.name => [] )
       end
     end
 
