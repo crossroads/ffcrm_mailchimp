@@ -24,6 +24,11 @@
         Not all webhooks provide 'user' information, in those cases, this user will own the operation.
         It is recommended you create a Fat Free CRM user purely for this purpose.
 
+      %br
+      = check_box_tag('iron_mq', 'true', !@config.iron_mq.nil?)
+      %label.label.top{ for: 'iron_mq' }
+        Use Iron MQ for inbound requests?
+
       %p
       = submit_tag 'Save', name: 'update', style: "width:60px"
 

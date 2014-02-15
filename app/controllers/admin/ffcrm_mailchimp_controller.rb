@@ -11,7 +11,7 @@ class Admin::FfcrmMailchimpController < Admin::ApplicationController
 
   def update
     FfcrmMailchimp.config.update!(params)
-    flash[:info] = "Api key saved."
+    flash[:info] = "Settings saved."
     redirect_to( action: 'index')
   end
 

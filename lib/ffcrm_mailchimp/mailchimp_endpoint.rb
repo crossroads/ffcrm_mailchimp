@@ -28,10 +28,13 @@ class FfcrmMailchimp::MailchimpEndpoint < FfcrmEndpoint::Endpoint
   end
 
   #
-  # Useful to parse an IronMQ request, if used
+  # Parse an IronMQ request, if desired
   def data
-    # CGI::parse(request.body.read) if FfcrmMailchimp.config.use_iron_mq?
-    params
+    if FfcrmMailchimp.config.iron_mq.nil?
+      params
+    else
+      CGI::parse(request.body.read)
+    end
   end
 
 end

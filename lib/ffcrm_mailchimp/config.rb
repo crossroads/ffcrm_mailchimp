@@ -16,6 +16,7 @@ module FfcrmMailchimp
       @config = Setting.ffcrm_mailchimp = {
         api_key: options[:api_key],
         user_id: options[:user_id],
+        iron_mq: options[:iron_mq],
       }
     end
 
@@ -32,6 +33,12 @@ module FfcrmMailchimp
     # the id of a CRM user that will be the 'mailchimp' user in Papertrail
     def user_id
       config.present? ? config[:user_id] : nil
+    end
+
+    #
+    # Is the inbound request from Iron MQ
+    def iron_mq
+      config.present? ? config[:iron_mq] : nil
     end
 
   end

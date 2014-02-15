@@ -57,4 +57,20 @@ describe FfcrmMailchimp::MailchimpEndpoint do
 
   end
 
+  describe "data" do
+
+    context "when request is from iron_mq" do
+      before {
+        FfcrmMailchimp.stub(:config).and_return( double(iron_mq: "true") )
+        mc_endpoint.stub_chain('request.body.read').and_return( "123456" )
+      }
+      it { expect( mc_endpoint.send(:data) ).to eql( CGI::parse("123456") ) }
+    end
+
+    context "when request is not from iron_mq" do
+      it { expect( mc_endpoint.send(:data) ).to eql( params ) }
+    end
+
+  end
+
 end
