@@ -51,7 +51,7 @@ module FfcrmMailchimp
     # Update the name and list preferences for a particular contact
     def profile_update
       return unless custom_field.present?
-      contact = Contact.find_by_email(data.email)
+      contact = Contact.find_by_email( data.email )
       if contact.present?
         contact.first_name = data.first_name
         contact.last_name = data.last_name
@@ -62,6 +62,7 @@ module FfcrmMailchimp
 
     #
     # Update email address assuming there is no existing user in the system with the same email
+    # When profile changes include email address changes then mailchimp sends two events.
     def email_changed
       return if data.new_email.blank? or data.old_email.blank?
       old_contact = Contact.find_by_email( data.old_email )
