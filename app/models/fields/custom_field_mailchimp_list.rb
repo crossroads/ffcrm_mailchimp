@@ -1,5 +1,4 @@
 require 'ffcrm_mailchimp/list'
-require 'ffcrm_mailchimp/list_subscription'
 
 class CustomFieldMailchimpList < CustomField
 
@@ -11,6 +10,7 @@ class CustomFieldMailchimpList < CustomField
   #------------------------------------------------------------------------------
   validate do
     errors.add(:list_id, "You must select a Mailchimp list.") if list_id.blank?
+    errors.add(:list_id, "The class this field is created for MUST have an 'email' attribute.") unless klass.columns.select{|c| c.name == 'email'}.any?
   end
 
   # Renders the selected groups for this list
