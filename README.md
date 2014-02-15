@@ -10,9 +10,10 @@ encouraged to make a donation for those in need via the Crossroads Foundation (t
 Installation
 =====
 
-Add the ffcrm_mailchimp gem (and a dependency) to your Gemfile.
+Add the ffcrm_mailchimp gem (and the ffcrm_endpoint dependency) to your Gemfile.
 
 ```
+gem 'ffcrm_endpoint'
 gem 'ffcrm_mailchimp', github: 'crossroads/ffcrm_mailchimp'
 ```
 
