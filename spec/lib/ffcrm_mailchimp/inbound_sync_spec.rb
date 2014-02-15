@@ -24,6 +24,8 @@ describe FfcrmMailchimp::InboundSync do
 
   describe "process" do
 
+    before { sync.stub(:custom_field).and_return( double(CustomField) ) }
+
     context "when type is 'subscribe'" do
       let(:params) { FactoryGirl.build(:mc_webhook, type: 'subscribe') }
       it { expect( sync ).to receive(:subscribe)
@@ -47,6 +49,20 @@ describe FfcrmMailchimp::InboundSync do
       it { expect( sync ).to receive(:unsubscribe)
            sync.process }
     end
+
+    context "when no custom field exists for this list" do
+
+      it "should do nothing" do
+        sync.should_receive(:custom_field).and_return( nil )
+        sync.should_not_receive(:subscribe)
+        sync.should_not_receive(:profile_update)
+        sync.should_not_receive(:email_changed)
+        sync.should_not_receive(:unsubscribe)
+        sync.process
+      end
+
+    end
+
 
   end
 
@@ -88,43 +104,22 @@ describe FfcrmMailchimp::InboundSync do
 
     end
 
-    context "when no custom field for this list" do
-
-      it "should do nothing" do
-        sync.should_receive(:custom_field).and_return( nil )
-        Contact.should_not_receive(:find_by_email)
-        sync.send(:subscribe)
-      end
-
-    end
-
   end
 
   describe "profile_update" do
 
     let(:params)  { FactoryGirl.build(:mc_webhook, type: 'profile', data: data) }
+    before {
+      @cf = create_custom_field
+      Contact.stub(:find_by_email).with( email ).and_return( contact )
+      sync.send(:profile_update)
+    }
+    after { delete_custom_field }
 
-    context "when custom field exists" do
-      before {
-        @cf = create_custom_field
-        Contact.stub(:find_by_email).with( email ).and_return( contact )
-        sync.send(:profile_update)
-      }
-      after { delete_custom_field }
-      it { expect( contact.first_name ).to eql( first_name ) }
-      it { expect( contact.last_name  ).to eql( last_name ) }
-      it { expect( contact.send(@cf.name).first['groupings'] ).to eql( [cf_groupings] ) }
-      it { expect( contact.send(@cf.name).first['list_id'] ).to eql( list_id ) }
-    end
-
-    context "when custom field doesn't exist" do
-      before {
-        Contact.stub(:find_by_email).with( email ).and_return( contact )
-        sync.stub(:custom_field).and_return( nil )
-      }
-      it { contact.should_not_receive(:save)
-           sync.send(:profile_update) }
-    end
+    it { expect( contact.first_name ).to eql( first_name ) }
+    it { expect( contact.last_name  ).to eql( last_name ) }
+    it { expect( contact.send(@cf.name).first['groupings'] ).to eql( [cf_groupings] ) }
+    it { expect( contact.send(@cf.name).first['list_id'] ).to eql( list_id ) }
 
   end
 
@@ -143,15 +138,25 @@ describe FfcrmMailchimp::InboundSync do
     end
 
     context "when new email does exist" do
-      it "should not update email" do
+
+      # Setup real custom fields - it's complicated.
+      before { @cf = create_custom_field }
+      after  { delete_custom_field }
+
+      it "should unsubscribe the old_email user" do
         Contact.should_receive(:find_by_email).with( old_email ).and_return( contact )
         Contact.should_receive(:find_by_email).with( new_email ).and_return( contact2 )
+        contact.should_receive(:update_attributes) do |args|
+          expect(args[ @cf.name ] ).to eql( [] )
+        end
         sync.send(:email_changed)
         expect( contact.email ).to_not eq( new_email )
+        expect( contact.email ).to_not eq( new_email )
       end
+
     end
 
-    context "when contact doesn't exist" do
+    context "when contact with old_email doesn't exist" do
       it "should ignore the update" do
         Contact.should_receive(:find_by_email).with( old_email ).and_return( nil )
         Contact.should_receive(:find_by_email).with( new_email ).and_return( nil )
