@@ -31,6 +31,7 @@ module FfcrmMailchimp
       if email_changed? or list_subscriptions_changed.any?
         list_subscriptions_changed.each do |column|
           subscription = ListSubscription.from_array( @record.send(column) )
+          break if !subscription.source_is_ffcrm?
           if subscription.wants_to_subscribe? # handles subscription updates too
             apply_mailchimp_subscription(subscription)
           else

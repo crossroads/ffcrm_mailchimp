@@ -2,120 +2,225 @@ require 'spec_helper'
 
 describe FfcrmMailchimp::InboundSync do
 
-  let(:data)       { FactoryGirl.build :data }
-  let(:response)   { FactoryGirl.build :response }
-  let(:field_data) { { custom_field: ["group1", "group2", "source_webhook"] } }
-  let(:cf_value)   { [{"list_id"=> "1235432", "groupings" => [{"group_id" => "1525",
-    "groups"=>["group1","group2"]}], "source" => "webhook"}]}
+  let(:email)      { "test@example.com" }
+  let(:new_email)  { "new_test@example.com" }
+  let(:old_email)  { "test@example.com" }
+  let(:list_id)    { "3e26bc072d" }
+  let(:first_name) { "Bob" }
+  let(:last_name)  { "Lee" }
+  let(:interests) { "group1, group2" }
+  let(:group_id)  { "5641" }
+  let(:groupings) { {"0"=> { "id" => group_id, "name" => "Groups", "groups" => interests } } }
+  let(:cf_groupings) { {"group_id" => group_id, "groups" => interests.split(', ') } }
 
-  describe "Mailchimp" do
+  let(:data) { { email: email, new_email: new_email, old_email: old_email, list_id: list_id,
+                 merges: { EMAIL: email, FNAME: first_name, LNAME: last_name,
+                           INTERESTS: interests, GROUPINGS: groupings }
+             } }
 
-    describe "User Profile" do
+  let(:params)  { FactoryGirl.build(:mc_webhook, data: data) }
+  let(:sync)    { FfcrmMailchimp::InboundSync.new( params ) }
+  let(:contact) { FactoryGirl.build(:contact) }
 
-      before(:each) do
-        @mod = generate_response("profile")
-      end
+  describe "process" do
 
-      it "should update profile of user" do
-        FactoryGirl.create(:contact, email: "test@example.com")
-        @mod.send(:profile_update)
-        record = Contact.find_by_email("test@example.com")
-        record.first_name.should eq "Bob"
-        record.last_name.should eq "Lee"
-      end
+    context "when type is 'subscribe'" do
+      let(:params) { FactoryGirl.build(:mc_webhook, type: 'subscribe') }
+      it { expect( sync ).to receive(:subscribe)
+           sync.process }
     end
 
-    describe "Subscribe new user" do
+    context "when type is 'profile'" do
+      let(:params) { FactoryGirl.build(:mc_webhook, type: 'profile') }
+      it { expect( sync ).to receive(:profile_update)
+           sync.process }
+    end
 
-      before(:each) do
-        @mod = generate_response("subscribe")
-        @mod.stub(:customfield_value).and_return(field_data)
-      end
+    context "when type is 'upemail'" do
+      let(:params) { FactoryGirl.build(:mc_webhook, type: 'upemail') }
+      it { expect( sync ).to receive(:email_changed)
+           sync.process }
+    end
 
+    context "when type is 'unsubscribe'" do
+      let(:params) { FactoryGirl.build(:mc_webhook, type: 'unsubscribe') }
+      it { expect( sync ).to receive(:unsubscribe)
+           sync.process }
+    end
+
+  end
+
+  describe "subscribe" do
+
+    let(:params)  { FactoryGirl.build(:mc_webhook, type: 'subscribe', data: data) }
+
+    # Setup real custom fields - it's complicated.
+    before { @cf = create_custom_field }
+    after  { delete_custom_field }
+
+    context "when user doesn't exist" do
       it "should create new user" do
-        record = Contact.find_by_email(response[:data][:email])
-        @mod.process
-        contact = Contact.find_by_email(response[:data][:email])
-        record.should be_blank
-        contact.should_not be_blank
-        contact.email.should eq response[:data][:email]
-      end
-
-      it "should not create duplicate record if user exists" do
-        record = [ FactoryGirl.create(:contact, email: "ryan@example.com") ]
-        @mod.process
-        contact = Contact.where(email: response[:data][:email])
-        record.count.should eq 1
-        contact.count.should eq 1
-      end
-
-      it "should not subscribe if customfield is not exist for list" do
-        @mod.stub(:customfield_value).and_return(field_data)
-        contact = FactoryGirl.create(:contact, email: 'test@example.com')
-        record = Contact.find_by_email(data[:data][:email])
-        record.reload.custom_field.should be_blank
+        Contact.stub(:find_by_email).with( email ).and_return( nil )
+        contact = Contact.new( email: email )
+        Contact.should_receive(:new).and_return( contact )
+        sync.send(:subscribe)
+        expect( contact.first_name ).to eql( first_name )
+        expect( contact.last_name ).to eql( last_name )
+        expect( contact.email ).to eql( email )
+        expect( contact.send(@cf.name).first["list_id"] ).to eql( list_id )
+        expect( contact.send(@cf.name).first["source"] ).to eql( "webhook" )
+        expect( contact.send(@cf.name).first["groupings"] ).to eql( [cf_groupings] )
       end
     end
 
-    describe "User Email" do
-      before(:each) do
-        @mod = generate_response("upemail")
-        FactoryGirl.create(:contact, email: "test@example.com", first_name: "Stanley")
+    context "when user exists" do
+
+      it "should update existing user" do
+        Contact.should_receive(:find_by_email).with( email ).and_return( contact )
+        Contact.should_not_receive(:new)
+        sync.send(:subscribe)
+        expect( contact.first_name ).to eql( first_name )
+        expect( contact.last_name ).to eql( last_name )
+        expect( contact.send(@cf.name).first["list_id"] ).to eql( list_id )
+        expect( contact.send(@cf.name).first["source"] ).to eql( "webhook" )
+        expect( contact.send(@cf.name).first["groupings"] ).to eql( [cf_groupings] )
       end
 
-      it "should update user email if email is updated " do
-        @mod.process
-        record = Contact.where(email: "new_test@example.com", first_name: "Stanley")
-        record.first.email.should eq "new_test@example.com"
+    end
+
+    context "when no custom field for this list" do
+
+      it "should do nothing" do
+        sync.should_receive(:custom_field).and_return( nil )
+        Contact.should_not_receive(:find_by_email)
+        sync.send(:subscribe)
       end
 
-      it "should not update user email_id if new email_id already exists" do
-        FactoryGirl.create(:contact, email: "new_test@example.com")
-        @mod.process
-        record = Contact.where(email: "test@example.com")
-        record.should_not be_blank
+    end
+
+  end
+
+  describe "profile_update" do
+
+    let(:params)  { FactoryGirl.build(:mc_webhook, type: 'profile', data: data) }
+
+    context "when custom field exists" do
+      before {
+        @cf = create_custom_field
+        Contact.stub(:find_by_email).with( email ).and_return( contact )
+        sync.send(:profile_update)
+      }
+      after { delete_custom_field }
+      it { expect( contact.first_name ).to eql( first_name ) }
+      it { expect( contact.last_name  ).to eql( last_name ) }
+      it { expect( contact.send(@cf.name).first['groupings'] ).to eql( [cf_groupings] ) }
+      it { expect( contact.send(@cf.name).first['list_id'] ).to eql( list_id ) }
+    end
+
+    context "when custom field doesn't exist" do
+      before {
+        Contact.stub(:find_by_email).with( email ).and_return( contact )
+        sync.stub(:custom_field).and_return( nil )
+      }
+      it { contact.should_not_receive(:save)
+           sync.send(:profile_update) }
+    end
+
+  end
+
+  describe "email_changed" do
+
+    let(:params)   { FactoryGirl.build(:mc_webhook, type: 'upemail', data: data) }
+    let(:contact2) { FactoryGirl.build(:contact) }
+
+    context "when new email doesn't exist" do
+      it "should update email" do
+        Contact.should_receive(:find_by_email).with( old_email ).and_return( contact )
+        Contact.should_receive(:find_by_email).with( new_email ).and_return( nil )
+        sync.send(:email_changed)
+        expect( contact.email ).to eq( new_email )
       end
     end
 
-    describe "Unsubscribe User" do
-
-      before(:each) do
-        @mod = generate_response("unsubscribe")
-        @mod.stub(:customfield_value).and_return(field_data)
-      end
-
-      it "should unsubscribe user and update custom field value" do
-        contact = FactoryGirl.create(:contact, email: 'test@example.com',
-          custom_field: cf_value)
-        record = Contact.find_by_email(data[:data][:email])
-        @mod.send(:unsubscribe).should be_true
-        record.reload.custom_field.should eq "--- []\n"
+    context "when new email does exist" do
+      it "should not update email" do
+        Contact.should_receive(:find_by_email).with( old_email ).and_return( contact )
+        Contact.should_receive(:find_by_email).with( new_email ).and_return( contact2 )
+        sync.send(:email_changed)
+        expect( contact.email ).to_not eq( new_email )
       end
     end
 
-    describe "Mailchimp List" do
-
-      before(:each) do
-        @mod = generate_response("profile")
-        @mod.stub(:customfield_value).and_return(field_data)
-      end
-
-      it "should update user list and group detail in custom field" do
-        contact = FactoryGirl.create(:contact, email: 'test@example.com',custom_field: cf_value)
-        @mod.send(:profile_update)
-        record = Contact.find_by_email(data[:data][:email])
-        record.should_not be_blank
-        record.custom_field.should be_present
+    context "when contact doesn't exist" do
+      it "should ignore the update" do
+        Contact.should_receive(:find_by_email).with( old_email ).and_return( nil )
+        Contact.should_receive(:find_by_email).with( new_email ).and_return( nil )
+        Contact.any_instance.should_not_receive(:update_attributes)
+        sync.send(:email_changed)
       end
     end
 
   end
 
-  def generate_response(response_type)
-    hash = response_type == "subscribe" ? response.merge({type: response_type}) : data.merge({type: response_type})
-    FfcrmMailchimp::Config.any_instance.stub_chain('api_key').
-      and_return("1f443fda6e6fab633b8509asdsdhga34234-us3")
-    return FfcrmMailchimp::InboundSync.new(hash)
+  describe "unsubscribe" do
+
+    before { @cf = create_custom_field }
+    after  { delete_custom_field }
+
+    let(:params)   { FactoryGirl.build(:mc_webhook, type: 'unsubscribe', data: data) }
+
+    context "when user is found" do
+      it "should unsubscribe" do
+        Contact.should_receive(:find_by_email).with( email ).and_return( contact )
+        contact.should_receive(:update_attributes) do |args|
+          expect(args["#{@cf.name}="] ).to eql( [] )
+        end
+        sync.send(:unsubscribe)
+      end
+    end
+
+    context "when user is not found" do
+      it "should not unsubscribe" do
+        Contact.should_receive(:find_by_email).with( email ).and_return( nil )
+        Contact.any_instance.should_not_receive(:update_attributes)
+        sync.send(:unsubscribe)
+      end
+    end
+
+  end
+
+  describe "custom_field" do
+
+    context "when list_id has an associated custom_field" do
+      before { @cf = create_custom_field }
+      after  { delete_custom_field }
+      it { expect( sync.send(:custom_field) ).to eql( @cf ) }
+    end
+
+    context "when list_id does not have an associated custom_field" do
+      it { expect( sync.send(:custom_field) ).to eql( nil ) }
+    end
+
+  end
+
+  #
+  # For some of the tests above we need to have a real mailchimp list custom field set up.
+  # This requires altering the database columns for the Contact class which need cleaning
+  # up afterwards.
+  def create_custom_field
+    field_group = FactoryGirl.create(:field_group, klass_name: "Contact")
+    list = { list_id: "3e26bc072d" }.with_indifferent_access
+    CustomFieldMailchimpList.create( as: 'mailchimp_list', field_group_id: field_group.id,
+      label: "custom_field", name: "custom_field_#{rand(1234)}", settings: list )
+  end
+
+  def delete_custom_field
+    CustomFieldMailchimpList.all.each do |field|
+      field.klass.connection.remove_column(field.send(:table_name), field.name)
+      field.klass.reset_column_information
+    end
+    CustomFieldMailchimpList.delete_all
+    FieldGroup.delete_all
   end
 
 end

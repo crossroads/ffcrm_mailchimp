@@ -2,7 +2,7 @@ require 'spec_helper'
 describe FfcrmMailchimp::MailchimpEndpoint do
 
   let(:api_key)     { "1f443fda6e6fab633b8509asdsdhga34234-us3" }
-  let(:params)      { FactoryGirl.build(:data, api_key: api_key) }
+  let(:params)      { FactoryGirl.build(:mc_webhook, api_key: api_key) }
   let(:request)     { double(params: params) }
   let(:mc_endpoint) { FfcrmMailchimp::MailchimpEndpoint.new(request) }
 
