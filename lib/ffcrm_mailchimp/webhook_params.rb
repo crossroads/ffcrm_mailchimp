@@ -19,7 +19,7 @@ module FfcrmMailchimp
     end
 
     def old_email
-      data[:email]
+      data[:old_email]
     end
 
     def new_email

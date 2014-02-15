@@ -4,7 +4,7 @@ describe FfcrmMailchimp::WebhookParams do
 
   let(:email)      { "test@example.com" }
   let(:new_email)  { "new_test@example.com" }
-  let(:old_email)  { "test@example.com" }
+  let(:old_email)  { "old_test@example.com" }
   let(:list_id)    { "3e26bc072d" }
   let(:first_name) { "Bob" }
   let(:last_name)  { "Lee" }
