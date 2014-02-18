@@ -22,7 +22,7 @@ class CustomFieldMailchimpList < CustomField
   # Return all available mailchimp lists. Used in admin screen
   #------------------------------------------------------------------------------
   def collection
-    all_lists = FfcrmMailchimp::List.all
+    all_lists = FfcrmMailchimp::List.collection_for_select
     all_lists.reject!{ |name, list_id| existing_list_ids_for_klass.include?(list_id) }
     if list
       # for edits, make sure we include our existing list
@@ -45,7 +45,7 @@ class CustomFieldMailchimpList < CustomField
   # Returns the mailchimp list associated with this instance
   #------------------------------------------------------------------------------
   def list
-    FfcrmMailchimp::List.get(list_id)
+    FfcrmMailchimp::List.find(list_id)
   end
 
   # The mailchimp list id associated with this instance

@@ -13,22 +13,24 @@ module FfcrmMailchimp
 
     # Return all the groups that belong to a particular list in Mailchimp
     def self.groups_for(list_id)
-      self._groups(list_id).select{ |group| group.list_id == list_id }
+      self.all_groups(list_id).select{ |group| group.list_id == list_id }
     end
 
     private
 
     # Ask the Mailchimp API for all available groups for a give list_id
     # Return a hash of groups with the group details and list id
-    def self._groups(list_id)
-      data = _config.lists.interest_groupings(id: list_id).first
+    # NOTE: we only support the first group for now
+    def self.all_groups(list_id)
+      data = groups_from_mailchimp(list_id).first
       groups = data["groups"]
       groups.map(&:stringify_keys).map {|grp| new("#{data["id"]}_"+grp["name"],
         grp["name"], list_id)}
     end
 
-    def self._config
-      Config.new.mailchimp_api
+    # Get the groups from mailchimp via our caching wrapper
+    def self.groups_from_mailchimp(list_id)
+      CacheMonkey.groups(list_id)
     end
   end
 

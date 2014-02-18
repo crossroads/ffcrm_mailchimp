@@ -37,3 +37,7 @@
   Add the following URL to each list webhook in Mailchimp that you want to keep in sync:
   - url = "#{root_url}endpoints/mailchimp_endpoint"
   = link_to url, url
+
+%p
+  = button_to "Reload caches", { action: "reprime" }, method: 'put', data: { confirm: "Are you sure you wish to reload the caches?" }
+  Clear and reload the mailchimp list and group cache

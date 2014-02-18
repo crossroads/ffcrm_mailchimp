@@ -1,28 +1,12 @@
 require 'ffcrm_mailchimp/group'
+require 'ffcrm_mailchimp/cache_monkey'
 
 module FfcrmMailchimp
 
-  # This relates to a list in mailchimp
+  # Encapsulates a mailchimp list
   class List
 
     attr_accessor :id, :name
-
-    class << self
-      # All the available lists in Mailchimp
-      def lists
-        self._lists
-      end
-
-      # All lists in form suitable for collection in select list
-      def all
-        self._lists.collect{ |hlist|[hlist.name, hlist.id]}
-      end
-
-      # Lookup a list based on id
-      def get(id)
-        self._lists.select{ |list| list.id == id }.first
-      end
-    end
 
     def initialize(id, name)
       @id = id
@@ -34,15 +18,36 @@ module FfcrmMailchimp
       FfcrmMailchimp::Group.groups_for(id)
     end
 
-    private
-    # Ask the Mailchimp API for all available lists
-    # Return a hash of list id and list name
-    def self._lists
-      @lists = _config.lists.list["data"].map(&:stringify_keys).map {|list| new(list["id"], list["name"])}
-    end
+    class << self
 
-    def self._config
-      Config.new.mailchimp_api
+      # All the available lists in Mailchimp
+      def lists
+        all_lists
+      end
+
+      # All lists in form suitable for collection in select list
+      def collection_for_select
+        all_lists.collect{ |hlist|[hlist.name, hlist.id]}
+      end
+
+      # Lookup a list based on id
+      def find(id)
+        all_lists.select{ |list| list.id == id }.first
+      end
+
+      private
+
+      # Ask the Mailchimp API for all available lists
+      # Return a hash of list id and list name
+      def all_lists
+        lists_from_mailchimp["data"].map(&:stringify_keys).map {|list| new(list["id"], list["name"])}
+      end
+
+      # Test stubs are easier when this is a function
+      def lists_from_mailchimp
+        CacheMonkey.lists
+      end
+
     end
   end
 end
