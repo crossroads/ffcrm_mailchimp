@@ -11,11 +11,11 @@ describe FfcrmMailchimp::OutboundSync do
   let(:groups)   { ["group1","group2"] }
   let(:email)    { "test@example.com" }
   let(:groupings) { [{ "group_id" => group_id, "groups"=> groups }] }
-  let(:grouping_params) { {"list_id" => list_id, "groupings" => groupings, "source"=> "ffcrm"} }
-  let(:params)  { { email: email, custom_field: [grouping_params]} }
+  let(:subscription_params) { {"list_id" => list_id, "groupings" => groupings, "source"=> "ffcrm"} }
+  let(:params)  { { email: email, custom_field: subscription_params } }
   let(:contact) { FactoryGirl.build(:contact, params) }
   let(:sync)    { FfcrmMailchimp::OutboundSync.new(contact) }
-  let(:subscription) { FfcrmMailchimp::ListSubscription.from_array( [grouping_params] ) }
+  let(:subscription) { FfcrmMailchimp::ListSubscription.new( subscription_params ) }
   let(:mock_api_call) { double }
 
   context "subscribe" do
@@ -24,7 +24,7 @@ describe FfcrmMailchimp::OutboundSync do
       before do
         sync.stub(:list_subscriptions_changed).and_return( ['custom_field'] )
         subscription.stub(:wants_to_subscribe?).and_return(true)
-        FfcrmMailchimp::ListSubscription.stub(:from_array).and_return(subscription)
+        FfcrmMailchimp::ListSubscription.stub(:new).and_return(subscription)
       end
       it {
         expect(sync).to receive(:apply_mailchimp_subscription).with(subscription)
@@ -36,7 +36,7 @@ describe FfcrmMailchimp::OutboundSync do
       before {
         sync.stub(:list_subscriptions_changed).and_return( ['custom_field'] )
         subscription.stub(:wants_to_subscribe?).and_return(false)
-        FfcrmMailchimp::ListSubscription.stub(:from_array).and_return(subscription)
+        FfcrmMailchimp::ListSubscription.stub(:new).and_return(subscription)
         sync.stub(:list_id_from_column).with('custom_field').and_return(list_id)
       }
       it {
@@ -102,8 +102,8 @@ describe FfcrmMailchimp::OutboundSync do
         expect( args[:email] ).to eql( {email: email} )
         expect( args[:merge_vars][:FNAME] ).to eql( contact.first_name )
         expect( args[:merge_vars][:LNAME] ).to eql( contact.last_name )
-        expect( args[:merge_vars][:groupings].first[:id] ).to eql( group_id )
-        expect( args[:merge_vars][:groupings].first[:groups] ).to eql( groups )
+        expect( args[:merge_vars][:groupings].first['group_id'] ).to eql( group_id )
+        expect( args[:merge_vars][:groupings].first['groups'] ).to eql( groups )
         expect( args[:double_optin] ).to eql( false )
       end
       sync.send(:apply_mailchimp_subscription, subscription)
@@ -129,7 +129,7 @@ describe FfcrmMailchimp::OutboundSync do
       mock_api_call.should_receive('unsubscribe') do |args|
         expect( args[:id] ).to eql( list_id )
         expect( args[:email][:email] ).to eql( email )
-        expect( args[:email][:delete_member] ).to eql( false )
+        expect( args[:email][:delete_member] ).to eql( true )
         expect( args[:email][:send_notify] ).to eql( false )
       end
       sync.send(:unsubscribe_from_mailchimp_list, list_id)

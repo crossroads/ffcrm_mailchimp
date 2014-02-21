@@ -41,6 +41,12 @@ module FfcrmMailchimp
       config.present? ? config[:iron_mq] : nil
     end
 
+    #
+    # Returns all the mailchimp_list fields
+    def mailchimp_list_fields
+      Field.where(as: 'mailchimp_list')
+    end
+
   end
 
 end

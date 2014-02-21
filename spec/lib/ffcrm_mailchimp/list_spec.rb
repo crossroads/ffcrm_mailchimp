@@ -7,7 +7,7 @@ describe FfcrmMailchimp::List do
   before { FfcrmMailchimp::List.stub(:lists_from_mailchimp).and_return( {"data" => lists} ) }
 
   context "when initialized" do
-    let(:list) { FfcrmMailchimp::List.new('123', 'test') }
+    let(:list) { FfcrmMailchimp::List.new( id: '123', name: 'test') }
     it { expect( list.id ).to eql('123') }
     it { expect( list.name ).to eql('test') }
   end

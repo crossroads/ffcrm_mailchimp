@@ -4,11 +4,10 @@ describe FfcrmMailchimp::ListSubscription do
 
   let(:list_id)  { "3e26bc072d" }
   let(:source) { "ffcrm" }
-  let(:group_id) { "1525" }
-  let(:groups)   { ["group1","group2"] }
-  let(:groupings) { [{ "group_id" => group_id, "groups"=> groups }] }
-  let(:grouping_params) { {"list_id" => list_id, "groupings" => groupings, "source"=> source} }
-  let(:subscription) { FfcrmMailchimp::ListSubscription.from_array( [grouping_params] ) }
+  let(:grouping1) { { "group_id" => "1525", "groups"=> ["group1","group2"] } }
+  let(:grouping2) { { "group_id" => "1243", "groups"=> ["group3","group4"] } }
+  let(:grouping_params) { {"list_id" => list_id, "groupings" => [grouping1, grouping2], "source"=> source} }
+  let(:subscription) { FfcrmMailchimp::ListSubscription.new( grouping_params ) }
 
   context "source_is_ffcrm?" do
     it { expect( subscription.source_is_ffcrm? ).to eql(true) }
@@ -47,32 +46,12 @@ describe FfcrmMailchimp::ListSubscription do
     }
   end
 
-  context "group_id" do
-    it { expect( subscription.group_id ).to eql( group_id ) }
-    it {
-      subscription.groupings = nil
-      expect( subscription.group_id ).to eql( nil )
-    }
-  end
-
-  context "groups" do
-    it { expect( subscription.groups ).to eql( groups ) }
-    it {
-      subscription.groupings = [{ "group_id" => group_id, "groups"=> [] }]
-      expect( subscription.groups ).to eql( [] )
-    }
-  end
-
-  context "to_a" do
-    it { expect( subscription.to_a.first['list_id'] ).to eql( list_id ) }
-    it { expect( subscription.to_a.first['source'] ).to eql( source ) }
-    it { expect( subscription.to_a.first['groupings'] ).to eql( groupings ) }
-  end
-
-  context "from_array" do
+  context "from_form" do
+    let(:form_params) { { "list_id" => list_id, "groups" => {"8661"=>["Option 1", ""], "8669"=>["Option 3", ""]}, "source" => source } }
+    let(:subscription) { FfcrmMailchimp::ListSubscription.from_form( form_params ) }
     it { expect( subscription.list_id ).to eql( list_id ) }
     it { expect( subscription.source ).to eql( source ) }
-    it { expect( subscription.groupings ).to eql( groupings ) }
+    it { expect( subscription.groupings ).to eql( [ { "group_id" => "8661", "groups" => ["Option 1"] }, { "group_id" => "8669", "groups" => ["Option 3"] } ] ) }
   end
 
 end

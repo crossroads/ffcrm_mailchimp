@@ -23,7 +23,7 @@ module FfcrmMailchimp
       # Turn on serialization for any mailchimp fields at exist at bootup
       ActiveSupport.on_load(:active_record) do
         # If this code is run during bootup, the Fields table might not exist due to empty schema.
-        Field.where(:as => 'mailchimp_list').map(&:apply_serialization) if Field.table_exists?
+        FfcrmMailchimp.config.mailchimp_list_fields.map(&:apply_serialization) if Field.table_exists?
       end
 
     end

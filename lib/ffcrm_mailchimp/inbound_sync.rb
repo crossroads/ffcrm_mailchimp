@@ -43,7 +43,7 @@ module FfcrmMailchimp
       contact = Contact.find_by_email( data.email ) || Contact.new( email: data.merges_email )
       contact.first_name = data.first_name
       contact.last_name = data.last_name
-      contact.send("#{custom_field.name}=", data.attributes)
+      contact.send("#{custom_field.name}=", cf_attributes_for(data) )
       contact.save
     end
 
@@ -54,7 +54,7 @@ module FfcrmMailchimp
       if contact.present?
         contact.first_name = data.first_name
         contact.last_name = data.last_name
-        contact.send("#{custom_field.name}=", data.attributes)
+        contact.send("#{custom_field.name}=", cf_attributes_for(data))
         contact.save
       end
     end
@@ -69,9 +69,9 @@ module FfcrmMailchimp
       new_contact = Contact.find_by_email( data.new_email )
       return if !old_contact.present?
       if !new_contact.present?
-        old_contact.update_attributes(email: data.new_email)
+        old_contact.update_attributes( email: data.new_email )
       else
-        old_contact.update_attributes( custom_field.name => [] )
+        old_contact.update_attributes( custom_field.name => {} )
       end
     end
 
@@ -80,21 +80,31 @@ module FfcrmMailchimp
     def unsubscribe
       contact = Contact.find_by_email( data.email )
       if contact.present?
-        contact.update_attributes( custom_field.name => [] )
+        contact.update_attributes( custom_field.name => {} )
       end
     end
 
     #
     # Use the webhook's list_id parameter to lookup the custom_field we should update
     def custom_field
-      @cf ||= Field.where( as: 'mailchimp_list' ).select{ |f| f.settings['list_id'] == data.list_id }.first
+      @cf ||= config.mailchimp_list_fields.select{ |f| f.settings['list_id'] == data.list_id }.first
     end
 
     #
     # Ensure that a custom field related to the webhook list_id exists.
     # If not, then we're probably not interested in this webhook.
     def list_field_exists?
-      !!custom_field
+      data.list_id.present? and !!custom_field
+    end
+
+    def config
+      FfcrmMailchimp.config
+    end
+
+    # Serializes WebhookParams into ListSubscription ready for saving on custom field
+    # Returns a hash
+    def cf_attributes_for(data)
+      data.to_list_subscription
     end
 
   end

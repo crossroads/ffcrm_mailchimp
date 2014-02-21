@@ -1,62 +1,50 @@
-require 'ffcrm_mailchimp/webhook_params'
+require 'spec_helper'
 
 describe FfcrmMailchimp::WebhookParams do
 
-  let(:email)      { "test@example.com" }
-  let(:new_email)  { "new_test@example.com" }
-  let(:old_email)  { "old_test@example.com" }
-  let(:list_id)    { "3e26bc072d" }
-  let(:first_name) { "Bob" }
-  let(:last_name)  { "Lee" }
-  let(:interests)  { "group1, group2" }
-  let(:group_id)   { "5641" }
-  let(:groupings)  { {"0"=> { "id" => group_id, "name" => "Groups", "groups" => interests } } }
-  let(:data)       { { email: email, new_email: new_email, old_email: old_email, list_id: list_id,
-                       merges: { EMAIL: email, FNAME: first_name, LNAME: last_name,
-                                 INTERESTS: interests, GROUPINGS: groupings } } }
-  let(:hook)       { FfcrmMailchimp::WebhookParams.new( data: data ) }
+  let(:webhook_data)  { FactoryGirl.build(:mc_webhook)[:data] }
+  let(:webhook)       { FfcrmMailchimp::WebhookParams.new( data: webhook_data ) }
 
   context "email" do
-    it { expect( hook.email ).to eql( email ) }
+    it { expect( webhook.email ).to eql( webhook_data['email'] ) }
   end
 
   context "merges_email" do
-    it { expect( hook.merges_email ).to eql( email ) }
+    it { expect( webhook.merges_email ).to eql( webhook_data['merges']['EMAIL'] ) }
   end
 
   context "old_email" do
-    it { expect( hook.old_email ).to eql( old_email ) }
+    it { expect( webhook.old_email ).to eql( webhook_data['old_email'] ) }
   end
 
   context "new_email" do
-    it { expect( hook.new_email ).to eql( new_email ) }
+    it { expect( webhook.new_email ).to eql( webhook_data['new_email'] ) }
   end
 
   context "list_id" do
-    it { expect( hook.list_id ).to eql( list_id ) }
-  end
-
-  context "interests" do
-    it { expect( hook.interests ).to eql( interests ) }
+    it { expect( webhook.list_id ).to eql( webhook_data['list_id'] ) }
   end
 
   context "groupings" do
-    it { expect( hook.groupings ).to eql( groupings ) }
+    it { expect( webhook.groupings ).to eql( webhook_data['merges']['GROUPINGS'] ) }
   end
 
   context "first_name" do
-    it { expect( hook.first_name ).to eql( first_name ) }
+    it { expect( webhook.first_name ).to eql( webhook_data['merges']['FNAME'] ) }
   end
 
   context "last_name" do
-    it { expect( hook.last_name ).to eql( last_name ) }
+    it { expect( webhook.last_name ).to eql( webhook_data['merges']['LNAME'] ) }
   end
 
-  context "attributes" do
-    it { expect( hook.attributes ).to include( "5641_group1" ) }
-    it { expect( hook.attributes ).to include( "5641_group2" ) }
-    it { expect( hook.attributes ).to include( "list_#{list_id}" ) }
-    it { expect( hook.attributes ).to include( "source_webhook" ) }
+  context "to_list_subscription" do
+    subject { webhook.to_list_subscription }
+    it { expect( subject.list_id ).to eql( webhook_data['list_id'] ) }
+    it { expect( subject.source ).to eql( 'webhook' ) }
+    it { expect( subject.groupings.first['group_id'] ).to eql( webhook_data['merges']['GROUPINGS']['0']['id'] ) }
+    it { expect( subject.groupings.first['groups'] ).to eql( webhook_data['merges']['GROUPINGS']['0']['groups'].split(', ') ) }
+    it { expect( subject.groupings.last['group_id'] ).to eql( webhook_data['merges']['GROUPINGS']['1']['id'] ) }
+    it { expect( subject.groupings.last['groups'] ).to eql( webhook_data['merges']['GROUPINGS']['1']['groups'].split(', ') ) }
   end
 
 end

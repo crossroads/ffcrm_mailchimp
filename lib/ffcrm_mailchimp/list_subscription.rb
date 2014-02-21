@@ -1,12 +1,20 @@
 #
-# A list subscription is serialised to yaml and stored on the contact object itself.
+# A list subscription encapsulates a specific instance of a contact and
+# the list he/she is subscribed too. It is useful for serializing individual
+# subscription data to be stored on the contact object itself.
 
 require 'ostruct'
 require 'active_support/core_ext/object'
 
 module FfcrmMailchimp
   class ListSubscription < OpenStruct
-    # methods :source, :list_id, :groupings
+
+    #
+    # Create a ListSubscription from a hash
+    # E.g. {"list_id"   => "1235432",
+    #       "source"    => "webhook",
+    #       "groupings" => [{"group_id" => "1525", "groups" => ["group1","group2"]},
+    #                       {"group_id" => "1243", "groups" => ["group3","group4"]} ]}
 
     def source_is_ffcrm?
       source == 'ffcrm'
@@ -27,34 +35,28 @@ module FfcrmMailchimp
     end
 
     #
-    # Extract the group_id from groupings
-    def group_id
-      ( groupings || [{}] ).first["group_id"]
+    # Does a specific group name exist in this subscription
+    def has_group?(name)
+      (groupings || []).select{ |grouping| grouping['groups'].include?(name) }.any?
     end
 
     #
-    # Extract the groups from groupings
-    def groups
-      ( groupings || [{}] ).first["groups"]
-    end
-
-    #
-    # Serialize into array format for storing in ActiveRecord objects.
-    # TODO
-    def to_a
-      [{ "list_id"   => list_id,
-         "source"    => source,
-         "groupings" => groupings
-      }]
-    end
-
-    #
-    # Create a ListSubscription from a stored array
-    # E.g.data  [{"list_id"   => "1235432",
+    # Create a ListSubscription from form data
+    # {"list_id"=>"9285aa3b18", "groups"=>{"8661"=>["Option 1", ""], "8669"=>["Option 3", ""]}, "source"=>"ffcrm"}
+    # becomes
+    # E.g.data   {"list_id"   => "1235432",
     #             "source"    => "webhook",
-    #             "groupings" => [{"group_id" => "1525", "groups"=>["group1","group2"]}]}]
-    def self.from_array(data)
-      ListSubscription.new( data.first )
+    #             "groupings" => [{"group_id" => "1525", "groups" => ["group1","group2"]},
+    #                             {"group_id" => "1243", "groups" => ["group3","group4"]}] }
+    def self.from_form(params)
+      groupings = []
+      if (groups = params['groups']).present?
+        groups.each do |id, value|
+          groupings << { "group_id" => id, "groups" => value.reject(&:blank?) }
+        end
+      end
+      data = { "list_id" => params['list_id'], "source" => params['source'], "groupings" => groupings }
+      ListSubscription.new( data )
     end
 
   end

@@ -83,9 +83,9 @@ describe FfcrmMailchimp::InboundSync do
         expect( contact.first_name ).to eql( first_name )
         expect( contact.last_name ).to eql( last_name )
         expect( contact.email ).to eql( email )
-        expect( contact.send(@cf.name).first["list_id"] ).to eql( list_id )
-        expect( contact.send(@cf.name).first["source"] ).to eql( "webhook" )
-        expect( contact.send(@cf.name).first["groupings"] ).to eql( [cf_groupings] )
+        expect( contact.send(@cf.name)[:list_id] ).to eql( list_id )
+        expect( contact.send(@cf.name)[:source] ).to eql( "webhook" )
+        expect( contact.send(@cf.name)[:groupings] ).to eql( [cf_groupings] )
       end
     end
 
@@ -97,9 +97,9 @@ describe FfcrmMailchimp::InboundSync do
         sync.send(:subscribe)
         expect( contact.first_name ).to eql( first_name )
         expect( contact.last_name ).to eql( last_name )
-        expect( contact.send(@cf.name).first["list_id"] ).to eql( list_id )
-        expect( contact.send(@cf.name).first["source"] ).to eql( "webhook" )
-        expect( contact.send(@cf.name).first["groupings"] ).to eql( [cf_groupings] )
+        expect( contact.send(@cf.name)[:list_id] ).to eql( list_id )
+        expect( contact.send(@cf.name)[:source] ).to eql( "webhook" )
+        expect( contact.send(@cf.name)[:groupings] ).to eql( [cf_groupings] )
       end
 
     end
@@ -118,8 +118,8 @@ describe FfcrmMailchimp::InboundSync do
 
     it { expect( contact.first_name ).to eql( first_name ) }
     it { expect( contact.last_name  ).to eql( last_name ) }
-    it { expect( contact.send(@cf.name).first['groupings'] ).to eql( [cf_groupings] ) }
-    it { expect( contact.send(@cf.name).first['list_id'] ).to eql( list_id ) }
+    it { expect( contact.send(@cf.name)[:groupings] ).to eql( [cf_groupings] ) }
+    it { expect( contact.send(@cf.name)[:list_id] ).to eql( list_id ) }
 
   end
 
@@ -147,7 +147,7 @@ describe FfcrmMailchimp::InboundSync do
         Contact.should_receive(:find_by_email).with( old_email ).and_return( contact )
         Contact.should_receive(:find_by_email).with( new_email ).and_return( contact2 )
         contact.should_receive(:update_attributes) do |args|
-          expect(args[ @cf.name ] ).to eql( [] )
+          expect(args[ @cf.name ] ).to eql( {} )
         end
         sync.send(:email_changed)
         expect( contact.email ).to_not eq( new_email )
@@ -178,7 +178,7 @@ describe FfcrmMailchimp::InboundSync do
       it "should unsubscribe" do
         Contact.should_receive(:find_by_email).with( email ).and_return( contact )
         contact.should_receive(:update_attributes) do |args|
-          expect(args[ @cf.name ] ).to eql( [] )
+          expect(args[ @cf.name ] ).to eql( {} )
         end
         sync.send(:unsubscribe)
       end
@@ -214,9 +214,9 @@ describe FfcrmMailchimp::InboundSync do
   # up afterwards.
   def create_custom_field
     field_group = FactoryGirl.create(:field_group, klass_name: "Contact")
-    list = { list_id: "3e26bc072d" }.with_indifferent_access
+    settings = { list_id: list_id }.with_indifferent_access
     CustomFieldMailchimpList.create( as: 'mailchimp_list', field_group_id: field_group.id,
-      label: "custom_field", name: "custom_field_#{rand(1234)}", settings: list )
+      label: "custom_field", name: "custom_field_#{rand(1234)}", settings: settings )
   end
 
   def delete_custom_field

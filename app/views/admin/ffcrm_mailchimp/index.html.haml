@@ -39,5 +39,20 @@
   = link_to url, url
 
 %p
-  = button_to "Reload caches", { action: "reprime" }, method: 'put', data: { confirm: "Are you sure you wish to reload the caches?" }
+  = button_to "Reload caches", { action: "reload_cache" }, method: 'put', data: { confirm: "Are you sure you wish to reload the caches?" }
   Clear and reload the mailchimp list and group cache
+
+%p
+  = button_to "Update data from Mailchimp", { action: "refresh_from_mailchimp" }, method: 'put', data: { confirm: "Are you sure you wish to refresh data from mailchimp?" }
+  Refresh data from mailchimp. This will clear all list/group data for all mailchimp lists inside CRM and reload the subscription data from mailchimp.
+
+%p
+  = button_to "Clear all settings and data", { action: "destroy_custom_fields" }, method: 'put', data: { confirm: "Are you sure you wish to destroy all Mailchimp List custom fields and associated data?" }
+  Destroy all 'Mailchimp List' custom fields and associated data from mailchimp.
+  NOTE: this is INCREDIBLY DESTRUCTIVE and should only be used if you want to
+  hard reset your CRM instance back to a state before this plugin was installed.
+
+%p
+  = button_to "Clear all mailchimp data in CRM", { action: "clear_crm_mailchimp_data" }, method: 'put', data: { confirm: "Are you sure you wish to delete all Mailchimp List data that is stored inside CRM?" }
+  Clearing all mailchimp data is useful if you want to clean out the CRM of mailchimp data
+  but leave the mailchimp_list custom fields intact.
