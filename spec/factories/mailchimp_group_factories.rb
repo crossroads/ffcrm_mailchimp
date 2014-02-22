@@ -1,3 +1,4 @@
+require 'ostruct'
 require 'ffaker'
 
 FactoryGirl.define do
@@ -11,8 +12,9 @@ FactoryGirl.define do
   #     {"bit"=>"2", "name"=>"Option 2", "display_order"=>"2", "subscribers"=>nil}]}
   #
 
-  factory :mailchimp_group, class: Hash do
+  factory :mailchimp_group, class: OpenStruct do
     id              { rand(1000) }
+    name            { Faker::Name.first_name }
     list_id         { rand(1000) }
     form_field      { 'checkboxes' }
     display_order   { rand(100) }

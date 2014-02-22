@@ -1,4 +1,5 @@
 require 'ffcrm_mailchimp/list'
+require 'ffcrm_mailchimp/member'
 
 module FfcrmMailchimp
 
@@ -43,19 +44,20 @@ module FfcrmMailchimp
       # For all the 'mailchimp list' custom fields, grab the list
       # subscriptions from mailchimp and update CRM
       def load_crm_with_mailchimp_data!
-        FfcrmMailchimp::Config.mailchimp_list_fields.each do |l|
-          if ( list = FfcrmMailchimp::List.find( l.list_id ) )
-            list.members do |webhook_param|
-              subscribe_contact(list_id, webhook_param)
+        config.mailchimp_list_fields.each do |f|
+          if ( list = FfcrmMailchimp::List.find( f.list_id ) )
+            list.members.each do |member|
+              subscribe_contact( member )
             end
           end
         end
       end
 
       # Adapts a WebhookParams object into something suitable for InboundSync
-      def subscribe_contact(params)
-        options = params.to_h.merge( type: 'subscribe' )
-        Rails.logger.info("FfcrmMailchimp: subscribing #{params.email} to list #{params.list_id}")
+      def subscribe_contact(member)
+        options = member.to_webhook_params.to_h
+        options.merge!( type: 'subscribe' )
+        Rails.logger.info("FfcrmMailchimp: subscribing #{member.email} to list #{member.list_id}")
         InboundSync.process(options)
       end
 

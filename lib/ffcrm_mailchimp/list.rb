@@ -1,3 +1,4 @@
+require 'json'
 require 'gibbon'
 require 'ostruct'
 require 'ffcrm_mailchimp/group'
@@ -37,23 +38,45 @@ module FfcrmMailchimp
       FfcrmMailchimp::Group.groups_for(id)
     end
 
-    # Query list members directly from Mailchimp
-    # Returns an array of WebhookParams
+    # Query Mailchimp Export API to get all membership details
+    # Returns an array of Member
     def members
-      gibbon.lists.members( id: id )['data'].map do |data|
-        WebhookParams.new( 'data' => data )
+      gibbon = Gibbon::Export.new( FfcrmMailchimp::config.api_key )
+      export = gibbon.list( id: id )
+
+      email_offset       = get_offset(export, 'Email Address') # 0
+      first_name_offset  = get_offset(export, 'First Name')    # 1
+      last_name_offset   = get_offset(export, 'Last Name')     # 2
+      last_changed_offset = get_offset(export, 'LAST_CHANGED') # 17
+
+      # Return [ ["Group 1", 3], ["Group 2", 4] ]
+      groups_with_offsets = groups.map(&:name).map do |name|
+        offset = get_offset(export, name)
+        offset.present? ? [name, offset] : nil
+      end.compact
+
+      export.drop(1).map do |line|
+        json = JSON.parse(line)
+        # {'Group One' => "Option 1, Option 2", "Group Two" => "Option 3" }
+        groups = {}
+        groups_with_offsets.map do |name, offset|
+          interest_groups = json[offset]
+          groups.merge!( interest_groups.blank? ? {} : { name => interest_groups } ) # Ensure { "Group Two" => "" } is excluded
+        end
+        FfcrmMailchimp::Member.new(
+          list_id: id,
+          email: json[email_offset],
+          first_name: json[first_name_offset],
+          last_name: json[last_name_offset],
+          subscribed_groups: groups,
+          last_changed: DateTime.parse( json[last_changed_offset] ) )
       end
     end
 
-    def clear_cache
-      lists.each { |list| list.groups.map(&:clear_cache) }
-      Rails.cache.delete( lists_cache_key )
-    end
-
-    # Clears and visits each list and group to fill the caches again
-    def reload_cache
-      clear_cache
-      lists.each{ |list| list.groups }
+    # Given the export in JSON format, extract the column index for a given column name
+    def get_offset(export, column_name)
+      @headers ||= JSON.parse( export[0] )
+      @headers.index( column_name )
     end
 
     class << self
@@ -75,6 +98,21 @@ module FfcrmMailchimp
         all_lists.select{ |list| list.id == id }.first
       end
 
+      def clear_cache
+        lists.each { |list| list.groups.map(&:clear_cache) }
+        Rails.cache.delete( lists_cache_key )
+      end
+
+      # Clears and visits each list and group to fill the caches again
+      def reload_cache
+        clear_cache
+        lists.each{ |list| list.groups }
+      end
+
+      def gibbon
+        @gibbon ||= Gibbon::API.new( config.api_key )
+      end
+
       private
 
       # Ask the Mailchimp API for all available lists
@@ -92,15 +130,11 @@ module FfcrmMailchimp
       end
 
       def lists_cache_key
-        "cache_monkey_lists"
+        "ffcrm_mailchimp_lists"
       end
 
       def config
         FfcrmMailchimp.config
-      end
-
-      def gibbon
-        @gibbon ||= Gibbon::API.new( config.api_key )
       end
 
     end

@@ -23,6 +23,10 @@ module FfcrmMailchimp
       groups.collect{ |group| group.stringify_keys['name'] }
     end
 
+    def clear_cache
+      Rails.cache.delete( self.class.cache_key(list_id) )
+    end
+
     # Return all the groups that belong to a particular list in Mailchimp
     def self.groups_for(list_id)
       groups_from_mailchimp(list_id).map do |group|
@@ -30,25 +34,21 @@ module FfcrmMailchimp
       end
     end
 
-    def clear_cache
-      Rails.cache.delete( groups_cache_key )
-    end
-
     private
 
     class << self
 
       # Get the groups from mailchimp and cache them
-      def groups_from_mailchimp
+      def groups_from_mailchimp(list_id)
         return [] if list_id.nil?
-        Rails.cache.fetch( groups_cache_key(list_id) ) do
+        Rails.cache.fetch( cache_key(list_id) ) do
           Rails.logger.info("FfcrmMailchimp: Cache miss fetching groups for list #{list_id}")
           gibbon.lists.interest_groupings(id: list_id)
         end
       end
 
-      def groups_cache_key
-        "cache_monkey_groups_for_list_" << list_id
+      def cache_key(list_id)
+        "ffcrm_mailchimp_groups_for_list_#{list_id}"
       end
 
       def gibbon

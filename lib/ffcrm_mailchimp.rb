@@ -16,7 +16,7 @@ module FfcrmMailchimp
       FfcrmMailchimp::List.reload_cache
     end
 
-    def refresh_from_mailchimp
+    def refresh_from_mailchimp!
       FfcrmMailchimp::Refresh.refresh_from_mailchimp!
     end
 
