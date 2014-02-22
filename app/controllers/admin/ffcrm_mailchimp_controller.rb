@@ -24,9 +24,8 @@ class Admin::FfcrmMailchimpController < Admin::ApplicationController
   end
 
   def refresh_from_mailchimp
-    #~ FfcrmMailchimp.delay.refresh_from_mailchimp!
     FfcrmMailchimp.refresh_from_mailchimp!
-    flash[:info] = "This job has been queued to run as a delayed job. Data will be reloaded from mailchimp in the background."
+    flash[:info] = "This job has been queued to run as a delayed job. Data will be reloaded from Mailchimp in the background."
     redirect_to( action: 'index' )
   end
 
