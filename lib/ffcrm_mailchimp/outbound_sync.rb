@@ -98,6 +98,7 @@ module FfcrmMailchimp
     # from the list rather than being unsubscribed - they can't be re-added by us
     # if they are unsubscribed.
     def unsubscribe_from_mailchimp_list(list_id)
+      return unless email.present?
       if is_subscribed_mailchimp_user?(list_id)
         gibbon.lists.unsubscribe( id: list_id, email: { email: email, delete_member: true, send_notify: false } )
       end
