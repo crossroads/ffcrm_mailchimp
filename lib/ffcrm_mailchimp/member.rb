@@ -44,7 +44,7 @@ module FfcrmMailchimp
 
     # serialize this into a WebhookParams object so we can pass to InboundSync
     def to_webhook_params
-      merges = { 'FNAME' => first_name, 'LNAME' => last_name, 'GROUPINGS' => groupings }
+      merges = { 'FNAME' => first_name, 'LNAME' => last_name, 'GROUPINGS' => groupings, 'EMAIL' => email }
       data = { 'email' => email, 'merges' => merges, 'list_id' => list_id }
       FfcrmMailchimp::WebhookParams.new( 'data' => data )
     end
