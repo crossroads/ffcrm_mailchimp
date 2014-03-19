@@ -41,9 +41,9 @@ describe FfcrmMailchimp::WebhookParams do
     subject { webhook.to_list_subscription }
     it { expect( subject.list_id ).to eql( webhook_data['list_id'] ) }
     it { expect( subject.source ).to eql( 'webhook' ) }
-    it { expect( subject.groupings.first['group_id'] ).to eql( webhook_data['merges']['GROUPINGS']['0']['id'] ) }
+    it { expect( subject.groupings.first['id'] ).to eql( webhook_data['merges']['GROUPINGS']['0']['id'] ) }
     it { expect( subject.groupings.first['groups'] ).to eql( webhook_data['merges']['GROUPINGS']['0']['groups'].split(', ') ) }
-    it { expect( subject.groupings.last['group_id'] ).to eql( webhook_data['merges']['GROUPINGS']['1']['id'] ) }
+    it { expect( subject.groupings.last['id'] ).to eql( webhook_data['merges']['GROUPINGS']['1']['id'] ) }
     it { expect( subject.groupings.last['groups'] ).to eql( webhook_data['merges']['GROUPINGS']['1']['groups'].split(', ') ) }
   end
 

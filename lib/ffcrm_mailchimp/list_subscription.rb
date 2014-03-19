@@ -13,8 +13,8 @@ module FfcrmMailchimp
     # Create a ListSubscription from a hash
     # E.g. {"list_id"   => "1235432",
     #       "source"    => "webhook",
-    #       "groupings" => [{"group_id" => "1525", "groups" => ["group1","group2"]},
-    #                       {"group_id" => "1243", "groups" => ["group3","group4"]} ]}
+    #       "groupings" => [{"id" => "1525", "groups" => ["group1","group2"]},
+    #                       {"id" => "1243", "groups" => ["group3","group4"]} ]}
 
     def source_is_ffcrm?
       source == 'ffcrm'
@@ -46,13 +46,13 @@ module FfcrmMailchimp
     # becomes
     # E.g.data   {"list_id"   => "1235432",
     #             "source"    => "webhook",
-    #             "groupings" => [{"group_id" => "1525", "groups" => ["group1","group2"]},
-    #                             {"group_id" => "1243", "groups" => ["group3","group4"]}] }
+    #             "groupings" => [{"id" => "1525", "groups" => ["group1","group2"]},
+    #                             {"id" => "1243", "groups" => ["group3","group4"]}] }
     def self.from_form(params)
       groupings = []
       if (groups = params['groups']).present?
         groups.each do |id, value|
-          groupings << { "group_id" => id, "groups" => value.reject(&:blank?) }
+          groupings << { "id" => id, "groups" => value.reject(&:blank?) }
         end
       end
       data = { "list_id" => params['list_id'], "source" => params['source'], "groupings" => groupings }

@@ -10,7 +10,7 @@ describe FfcrmMailchimp::OutboundSync do
   let(:group_id) { "1525" }
   let(:groups)   { ["group1","group2"] }
   let(:email)    { "test@example.com" }
-  let(:groupings) { [{ "group_id" => group_id, "groups"=> groups }] }
+  let(:groupings) { [{ "id" => group_id, "groups"=> groups }] }
   let(:subscription_params) { {"list_id" => list_id, "groupings" => groupings, "source"=> "ffcrm"} }
   let(:params)  { { email: email, custom_field: subscription_params } }
   let(:contact) { FactoryGirl.build(:contact, params) }
@@ -23,11 +23,12 @@ describe FfcrmMailchimp::OutboundSync do
     context "when subscribing a contact to the mailchimp list" do
       before do
         sync.stub(:list_subscriptions_changed).and_return( ['custom_field'] )
+        sync.stub(:list_id_from_column).and_return( list_id )
         subscription.stub(:wants_to_subscribe?).and_return(true)
         FfcrmMailchimp::ListSubscription.stub(:new).and_return(subscription)
       end
       it {
-        expect(sync).to receive(:apply_mailchimp_subscription).with(subscription)
+        expect(sync).to receive(:apply_mailchimp_subscription).with(subscription, list_id)
         sync.subscribe
       }
     end
@@ -102,11 +103,11 @@ describe FfcrmMailchimp::OutboundSync do
         expect( args[:email] ).to eql( {email: email} )
         expect( args[:merge_vars][:FNAME] ).to eql( contact.first_name )
         expect( args[:merge_vars][:LNAME] ).to eql( contact.last_name )
-        expect( args[:merge_vars][:groupings].first['group_id'] ).to eql( group_id )
+        expect( args[:merge_vars][:groupings].first['id'] ).to eql( group_id )
         expect( args[:merge_vars][:groupings].first['groups'] ).to eql( groups )
         expect( args[:double_optin] ).to eql( false )
       end
-      sync.send(:apply_mailchimp_subscription, subscription)
+      sync.send(:apply_mailchimp_subscription, subscription, list_id)
     end
 
     it "should update user subscription if user is already subscribed to the list" do
@@ -116,7 +117,7 @@ describe FfcrmMailchimp::OutboundSync do
       api_call.should_receive('subscribe') do |args|
         expect( args[:update_existing] ).to eql( "true" )
       end
-      sync.send(:apply_mailchimp_subscription, subscription)
+      sync.send(:apply_mailchimp_subscription, subscription, list_id)
     end
 
   end

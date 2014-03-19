@@ -32,10 +32,12 @@ module FfcrmMailchimp
         list_subscriptions_changed.each do |column|
           subscription = ListSubscription.new( @record.send(column) )
           break if !subscription.source_is_ffcrm?
-          if subscription.wants_to_subscribe? # handles subscription updates too
-            apply_mailchimp_subscription(subscription)
+          # It's important to get list_id from the column not the ListSubscription
+          # because if list_id is missing in ListSubscription then that mean 'unsubscribe' from list
+          list_id = list_id_from_column(column)
+          if subscription.wants_to_subscribe? # handles updates too
+            apply_mailchimp_subscription(subscription, list_id)
           else
-            list_id = list_id_from_column(column) # list_id isn't in ListSubscription any more
             unsubscribe_from_mailchimp_list(list_id)
           end
         end
@@ -84,8 +86,7 @@ module FfcrmMailchimp
     #
     # If the user is not currently subscribed to this mailchimp list, subscribe them.
     # If the user is currently subscribed to this mailchimp list, update their interest group settings
-    def apply_mailchimp_subscription(subscription)
-      list_id = subscription.list_id
+    def apply_mailchimp_subscription(subscription, list_id)
       params = { id: list_id, email: { email: @record.email}, double_optin: false,
                 merge_vars: { FNAME: @record.first_name, LNAME: @record.last_name, groupings: subscription.groupings } }
       params.merge!( update_existing: "true" ) if is_subscribed_mailchimp_user?(list_id)

@@ -11,7 +11,7 @@ describe FfcrmMailchimp::InboundSync do
   let(:interests) { "group1, group2" }
   let(:group_id)  { "5641" }
   let(:groupings) { {"0"=> { "id" => group_id, "name" => "Groups", "groups" => interests } } }
-  let(:cf_groupings) { {"group_id" => group_id, "groups" => interests.split(', ') } }
+  let(:cf_groupings) { {"id" => group_id, "groups" => interests.split(', ') } }
 
   let(:data) { { email: email, new_email: new_email, old_email: old_email, list_id: list_id,
                  merges: { EMAIL: email, FNAME: first_name, LNAME: last_name,

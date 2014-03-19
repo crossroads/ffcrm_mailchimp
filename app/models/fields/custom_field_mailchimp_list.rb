@@ -16,8 +16,16 @@ class CustomFieldMailchimpList < CustomField
 
   # Renders the selected groups for this list
   #------------------------------------------------------------------------------
-  def render(group_ids)
-    group_ids && groups.select{ |group| group_ids.include?(group.id) }.map(&:name).join(', ')
+  # {"list_id"=>"9285aa3b18", "source"=>"webhook",
+  #  "groupings"=>[{"id"=>"8661", "groups"=>["Option 1"]}, {"id"=>"8669", "groups"=>["Option 5"]}]}
+  # becomes "Option 1, Option 2"
+  def render(value)
+    groups = []
+    groupings = (value || {})['groupings']
+    groups << (groupings || []).map{ |gp| grouping_text(gp) }
+    out = "#{list.name}"
+    out << ": #{groups.join('; ')}" if groups.any?
+    out
   end
 
   # Return all available mailchimp lists. Used in admin screen
@@ -90,12 +98,32 @@ class CustomFieldMailchimpList < CustomField
               nil
             elsif value.is_a?(FfcrmMailchimp::ListSubscription)
               value.to_h
+            elsif value.respond_to?(:to_h)
+              FfcrmMailchimp::ListSubscription.from_form( value ).to_h
             else
-              raise RuntimeError, "FfcrmMailchimp: #{attr}= must be passed a ListSubscription object or nil."
+              raise RuntimeError, "FfcrmMailchimp: #{attr}= must be passed a ListSubscription object, something hash-like or nil. Got #{attr.class}"
             end
           write_attribute( attr, data )
         end
       WRITER
     end
   end
+
+  private
+
+  #
+  # Turn "groupings"=>[{"id"=>"8661", "groups"=>["Option 1"]}, {"id"=>"8669", "groups"=>["Option 5"]}]
+  # into "Group name 1: Option 1; Group name 2: Option 5"
+  def grouping_text(grouping)
+    out = ""
+    group_id = grouping["id"]
+    out << group_name_from_group_id(group_id)
+    out << ": #{grouping["groups"].join(', ')}" if grouping["groups"].any?
+    out
+  end
+
+  def group_name_from_group_id(id)
+    groups.select{|g| g.id.to_s == id.to_s}.first.try(:name) || ''
+  end
+
 end

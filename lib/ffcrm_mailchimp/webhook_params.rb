@@ -58,7 +58,7 @@ module FfcrmMailchimp
     def to_list_subscription
       groups = []
       groupings.map do |key, value|
-        groups << { 'group_id' => value['id'], 'groups' => value['groups'].split(', ').map(&:strip) }
+        groups << { 'id' => value['id'], 'groups' => value['groups'].split(', ').map(&:strip) }
       end
       ListSubscription.new( 'list_id' => list_id, 'source' => 'webhook', 'groupings' => groups )
     end

@@ -4,8 +4,8 @@ describe FfcrmMailchimp::ListSubscription do
 
   let(:list_id)  { "3e26bc072d" }
   let(:source) { "ffcrm" }
-  let(:grouping1) { { "group_id" => "1525", "groups"=> ["group1","group2"] } }
-  let(:grouping2) { { "group_id" => "1243", "groups"=> ["group3","group4"] } }
+  let(:grouping1) { { "id" => "1525", "groups"=> ["group1","group2"] } }
+  let(:grouping2) { { "id" => "1243", "groups"=> ["group3","group4"] } }
   let(:grouping_params) { {"list_id" => list_id, "groupings" => [grouping1, grouping2], "source"=> source} }
   let(:subscription) { FfcrmMailchimp::ListSubscription.new( grouping_params ) }
 
@@ -51,7 +51,7 @@ describe FfcrmMailchimp::ListSubscription do
     let(:subscription) { FfcrmMailchimp::ListSubscription.from_form( form_params ) }
     it { expect( subscription.list_id ).to eql( list_id ) }
     it { expect( subscription.source ).to eql( source ) }
-    it { expect( subscription.groupings ).to eql( [ { "group_id" => "8661", "groups" => ["Option 1"] }, { "group_id" => "8669", "groups" => ["Option 3"] } ] ) }
+    it { expect( subscription.groupings ).to eql( [ { "id" => "8661", "groups" => ["Option 1"] }, { "id" => "8669", "groups" => ["Option 3"] } ] ) }
   end
 
 end
