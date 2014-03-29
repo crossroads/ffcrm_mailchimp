@@ -206,9 +206,9 @@ describe FfcrmMailchimp::OutboundSync do
 
   def setup_custom_field_record
     field_group = FactoryGirl.create(:field_group, klass_name: "Contact")
-    list = { list_id: "3e26bc072d" }.with_indifferent_access
-    field = FactoryGirl.create(:field, field_group_id: field_group.id, type: "CustomFieldMailchimpList",
-      label: "custom_field", name: "custom_field", as: "mailchimp_list", settings: list)
+    settings = { list_id: "3e26bc072d" }.with_indifferent_access
+    FactoryGirl.create(:field, field_group_id: field_group.id, type: "CustomFieldMailchimpList",
+      label: "custom_field", name: "custom_field", as: "mailchimp_list", settings: settings)
   end
 
   def teardown_custom_field_record

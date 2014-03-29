@@ -199,7 +199,7 @@ describe FfcrmMailchimp::InboundSync do
     context "when list_id has an associated custom_field" do
       before { @cf = create_custom_field }
       after  { delete_custom_field }
-      it { expect( sync.send(:custom_field) ).to eql( @cf ) }
+      it { expect( sync.send(:custom_field) ).to eql( CustomFieldMailchimpList.where(name: @cf.name).first ) }
     end
 
     context "when list_id does not have an associated custom_field" do
@@ -215,17 +215,11 @@ describe FfcrmMailchimp::InboundSync do
   def create_custom_field
     field_group = FactoryGirl.create(:field_group, klass_name: "Contact")
     settings = { list_id: list_id }.with_indifferent_access
-    field = CustomFieldMailchimpList.create( as: 'mailchimp_list', field_group_id: field_group.id,
-      label: "custom_field", name: "custom_field_#{rand(1234)}", settings: settings )
-    field.klass.reset_column_information
-    field
+    FactoryGirl.create(:field, field_group_id: field_group.id, type: "CustomFieldMailchimpList",
+      label: "custom_field", name: "custom_field", as: "mailchimp_list", settings: settings)
   end
 
   def delete_custom_field
-    CustomFieldMailchimpList.all.each do |field|
-      field.klass.connection.remove_column(field.send(:table_name), field.name)
-      field.klass.reset_column_information
-    end
     CustomFieldMailchimpList.delete_all
     FieldGroup.delete_all
   end
