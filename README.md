@@ -59,11 +59,15 @@ This button will force all list subscription data in FFCRM to be removed and upd
 This is a simple, one-way update only. It only adds MailChimp data to FFCRM. It does not make any changes to MailChimp records. E.g. If James Smith is marked in FFCRM as subscribed to “Special Deals” but he is not subscribed in MailChimp (a case that can occur if you disable integration on a list), this button will remove the “Special Deals” subscription in FFCRM.
 
 
-### Clear all settings and data
+### Clear all mailchimp data in CRM
 
-This button destroys any MailChimp subscriber info already in FFCRM. There is no “undo”.
+This button completely removes any MailChimp subscriber info in FFCRM. There is no “undo”.
 
 This is useful if you have changed MailChimp accounts or if you have deleted some MailChimp lists and/or generaly got your data way out of whack. You can start fresh, reconfigure the plugin and pull fresh data from MailChimp.
+
+### Clear all settings and data
+
+In addition to removing any Mailchimp list data stored in FFCRM, it will also delete all the Mailchimp custom fields and data. It acts just like a 'factory reset' button. Use carefully.
 
 
 ## Important Notes / Caveats
