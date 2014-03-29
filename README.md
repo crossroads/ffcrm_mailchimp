@@ -1,14 +1,16 @@
-About
-=====
+# FFCRM Mailchimp
+
+## About
 
 ffcrm_mailchimp is designed to work with the popular open source [Fat Free CRM](http://www.fatfreecrm.com).
 
 ffcrm_mailchimp is Charityware.  You can use and copy it as much as you like, but you are
 encouraged to make a donation for those in need via the Crossroads Foundation (the organisation who built this plugin). See [http://www.crossroads.org.hk/](http://www.crossroads.org.hk/)
 
+This plugin enables FFCRM to listen for MailChimp subscribes, unsubscribes, profile updates, email changed events performed by a MailChimp subscriber, MailChimp Admin or the MailChimp API and update contact records accordingly. Additionally, in FFCRM, contact creates, updates, deletes and merges are also communicated back to Mailchimp.
 
-Installation
-=====
+
+## Installation
 
 Add the ffcrm_mailchimp gem (and the ffcrm_endpoint dependency) to your Gemfile.
 
@@ -17,16 +19,9 @@ gem 'ffcrm_endpoint'
 gem 'ffcrm_mailchimp', github: 'crossroads/ffcrm_mailchimp'
 ```
 
-Usage
-=====
+## Setup
 
-Setup
------
-
-DelayedJob
-
-This plugin depends on delayed job.
-Run the following commands to set it up:
+This plugin depends on delayed job. You will need to run the following commands to set it up:
 
 ```
 bundle install
@@ -34,50 +29,46 @@ rails generate delayed_job:active_record
 rake db:migrate
 ```
 
-1. Input your MailChimp API key and click “next”. We will go fetch the names of all the lists in your mailchimp account.
-2. Add MailChimp integration to the lists you would like to integrate with FFCRM
-3. That’s it! A new field will automatically be added to contacts so you can manage their MailChimp list subscriptions from FFCRM
+Start your rails server and goto the Admin -> Mailchimp tab.
 
-<table border="0" cellpadding="10">
-  <tr>
-    <td align="center">
-      <a href="http://content.screencast.com/users/mattgow/folders/Jing/media/e5fa171b-77e1-4798-84eb-bdf1e9851500/2013-03-07_2230.png" target="_blank" title="Create Contacts">
-        <img src="http://content.screencast.com/users/mattgow/folders/Jing/media/a2d3589c-8ffb-4238-b0cf-12944621a20a/2013-03-07_2238.png" alt="Adding your MailChimp API Key">
-      </a>
-      <br />
-      <em>Supply your MailChimp API key</em>
-    </td>
-    <td align="center">
-      <a href="http://content.screencast.com/users/mattgow/folders/Jing/media/49fa8876-0d62-432e-8027-71fded3b670b/2013-03-07_2249.png" target="_blank" title="Create Contacts">
-        <img src="http://content.screencast.com/users/mattgow/folders/Jing/media/db190a29-b59c-4083-87b6-ba527788c17d/2013-03-07_2253.png" alt="You will see the lists available in your MailChimp account.">
-      </a>
-      <br />
-      <em>Enable integration for your MailChimp lists</em>
-    </td>
-  </tr>
-</table>
+1. Input your MailChimp API key and select a default user who will be attributed with the changes the plugin makes. We suggest you create your own dedicated Mailchimp user for this. Save the form.
+2. Now goto the Admin -> Custom Fields tab
+3. On the contacts tab, create a new custom field with type 'Mailchimp'. A list dropdown will appear with the mailchimp lists associated with the mailchimp API key you just entered. Choose one list.
+4. If you have other lists, you can go ahead and create more custom fields.
+5. Restart your server to propagate custom field changes to all instances. (a FFCRM requirement)
+ 
+On mailchimp:
 
-#### Advanced: changing MailChimp's configuration
+1. Login to your mailchimp account and add a webhook for each list you wish to sync.
+2. You can find the inbound webhook url to use on the Admin -> Mailchimp tab underneath the form. It is of the form: https://www.example.com/endpoints/mailchimp_endpoint?api_key=mailchimp-api-key
 
-By default, MailChimp will tell FFCRM about subscribes, unsubscribes, profile updates, cleaned addresses, email changed and campaign sending events performed by a MailChimp subscriber, MailChimp Admin or the MailChimp API. You can, however, fine tune the actions in MailChimp that will cause FFCRM to update by clicking “advanced” to edit MailChimp’s settings.
-* We've not thought through all the implications of all the settings combinations you could choose in MailChimp so experiment at your own risk.
-* If you remove and later re-add integration to a list, it will get the default settings so if you’d fine tuned them in MailChimp before you’d have to redo that.
+Obviously, your webhook address needs to be a publicly accessible url. Mailchimp won't know where to go if you use localhost! However, if you'd like to try out this plugin on your local machine, I've found the ngrok proxy service invaluable. Just make sure you understand what is / does before using it!
+
+Final step: ensure delayed_job is running and you're good to go. Start creating/editing contacts and Mailchimp should be updated automatically and vice-versa.
+
+## Admin buttons
+
+### Reload caches
+
+This button will clear any mailchimp list/group caches that are stored. This is useful if you know you've changed the name of a list or added an interest group and you'd like to update FFCRM. Pressing this button is non-destructive - you won't delete anything important!
 
 ### Update data from MailChimp
-This button will fetch all subscriber info for the lists that have integration enabled. It will create/update a contact in FFCRM for each (valid) one.
-This is a simple, one-way update only. It only adds MailChimp data to FFCRM. It does not remove data from FFCRM or make any changes to MailChimp records. E.g. If James Smith is marked in FFCRM as subscribed to “Special Deals” but he is not subscribed in MailChimp (a case that can occur if you disable integration on a list), this update will not modify either FFCRM or MailChimp.
 
-If your data is messed up you should first clear all settings and data, reconfigure your plugin and then update from MailChimp.
+This button will force all list subscription data in FFCRM to be removed and updated from Mailchimp. Use it to get your FFCRM instance up to date with Mailchimp. It will create/update contacts in FFCRM as necessary.
 
-###Clear all settings and data###
-This button starts by destroying any MailChimp subscriber info already in FFCRM and telling MailChimp we no longer want it to inform FFCRM of any subscriber changes. There is no “undo”.
+This is a simple, one-way update only. It only adds MailChimp data to FFCRM. It does not make any changes to MailChimp records. E.g. If James Smith is marked in FFCRM as subscribed to “Special Deals” but he is not subscribed in MailChimp (a case that can occur if you disable integration on a list), this button will remove the “Special Deals” subscription in FFCRM.
 
-This is great if you have changed MailChimp accounts or if you have deleted some MailChimp lists and/or generaly got your data way out of whack. You can start fresh, reconfigure the plugin and pull fresh dat from MailChimp.
 
-Important Notes
----------------
+### Clear all settings and data
 
-#### Deleting a list in MailChimp isn't enough
+This button destroys any MailChimp subscriber info already in FFCRM. There is no “undo”.
+
+This is useful if you have changed MailChimp accounts or if you have deleted some MailChimp lists and/or generaly got your data way out of whack. You can start fresh, reconfigure the plugin and pull fresh data from MailChimp.
+
+
+## Important Notes / Caveats
+
+### Deleting a list in MailChimp isn't enough
 
 If you delete a list in MailChimp or disable its integration, that list will remain visible as a checkbox on FFCRM contacts and any existing data will remain untouched in FFCRM (the plugin doesn’t clean it out). To get rid of a list entirely clear all plugin settings and data in FFCRM, then reconfigure the plugin and finally, update your data again from MailChimp.
 
@@ -129,3 +120,10 @@ Limitations
 * The plugin can only keep First Name, Last Name and Email Address in sync (not other custom fields)
 * If you rename a list in MailChimp (but don’t change it’s ID) the integration will keep working. However, the name of the checkbox in FFCRM used for that list will still have the old name. If you want to fix that you need to reset everything and grab MailChimp data again.
 * You can’t use this plugin to batch subscribe you FFCRM contacts to MailChimp. Partly because that is not something we need (we want MailChimp to be the final word in who is on a list) and partly because it’s dangerous (could get your MailChimp account flagged)
+
+
+Todo
+----
+
+* Add support for cleaned addresses
+* Add support for creating a 'campaign sent' note on the contact.
