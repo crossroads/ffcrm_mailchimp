@@ -36,7 +36,7 @@ Start your rails server and goto the Admin -> Mailchimp tab.
 3. On the contacts tab, create a new custom field with type 'Mailchimp'. A list dropdown will appear with the mailchimp lists associated with the mailchimp API key you just entered. Choose one list.
 4. If you have other lists, you can go ahead and create more custom fields.
 5. Restart your server to propagate custom field changes to all instances. (a FFCRM requirement)
- 
+
 On mailchimp:
 
 1. Login to your mailchimp account and add a webhook for each list you wish to sync.
@@ -107,6 +107,7 @@ When you use FFCRM to subscribe someone to a MailChimp list, the person will not
 ## Limitations
 
 * This plugin will only sync a contact’s main email address . You can’t, for example, have a contact subscribed to one list with their primary email address and another list with their alternative email address.
+* When a user's email and name changes on mailchimp (profile update), Mailchimp will send through two webhooks - 'profile update' and 'upemail'. If the profile update comes in before upemail, then FFCRM is unable to locate the profile to change because referenced email is the new one not the old one.
 * This plugin only syncs FFCRM contacts (not accounts or other objects).
 * The plugin can only keep First Name, Last Name and Email Address in sync (not other custom fields)
 * If you rename a list in MailChimp (but don’t change it’s ID) the integration will keep working. However, the name of the checkbox in FFCRM used for that list will still have the old name. If you want to fix that you need to reset everything and grab MailChimp data again.
@@ -117,4 +118,7 @@ When you use FFCRM to subscribe someone to a MailChimp list, the person will not
 
 * Add support for cleaned addresses
 * Add support for creating a 'campaign sent' note on the contact.
+* Add ability to store Mailchimp data 'id' for a user rather than using 'email' as the foreign key. (This fixes the profile_update / upemail issue above.)
 * Resolve the case where there are two contacts in FFCRM with the same email address - form should not pass validation if a mailchimp list is checked and there is a duplicate email address. This seems like the best compromise as it allows you to have contacts with duplicate emails in FFCRM but NOT if that affects MailChimp.
+* When FFCRM creates a new contact via the InboundSync, if the Mailchimp List custom field is in a Field Group with a Tag, the tag is not added to the contact and the fields are not visible in FFCRM until it is added.
+* Table view showing if sync is out of date - say if there are emails subscribed in FFCRM but not mailchimp. (For sanity checking)

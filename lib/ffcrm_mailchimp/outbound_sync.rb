@@ -24,7 +24,7 @@ module FfcrmMailchimp
       mailchimp_list_field_names.each do |column|
         subscription = ListSubscription.new( @record.send(column) )
         if !subscription.source_is_ffcrm? # Stop if this is a webhook from mailchimp
-          FfcrmMailchimp.logger("OutboundSync: ignoring updates to #{@record.class}##{@record.id} (change initiated by webhook)")
+          FfcrmMailchimp.logger("OutboundSync: ignoring updates to #{@record.class}##{@record.id} (change initiated by webhook or no list subscription data)")
           break
         end
         # Note: it's important to get list_id from the column not the ListSubscription
