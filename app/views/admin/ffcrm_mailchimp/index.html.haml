@@ -40,7 +40,8 @@
 
 %p
   Add the following URL to each list webhook in Mailchimp that you want to keep in sync:
-  - url = "#{root_url}endpoints/mailchimp_endpoint"
+  %br
+  - url = "#{root_url}endpoints/mailchimp_endpoint?api_key=#{@config.api_key}"
   = link_to url, url
 
 %p
