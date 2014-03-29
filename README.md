@@ -1,10 +1,10 @@
 About
 =====
 
-ffcrm_mailchimp is designed to work with the popular open source CRM [Fat Free CRM][http://www.fatfreecrm.com].
+ffcrm_mailchimp is designed to work with the popular open source [Fat Free CRM](http://www.fatfreecrm.com).
 
 ffcrm_mailchimp is Charityware.  You can use and copy it as much as you like, but you are
-encouraged to make a donation for those in need via the Crossroads Foundation (the organisation who built this plugin). See http://www.crossroads.org.hk/
+encouraged to make a donation for those in need via the Crossroads Foundation (the organisation who built this plugin). See [http://www.crossroads.org.hk/](http://www.crossroads.org.hk/)
 
 
 Installation
@@ -28,7 +28,8 @@ DelayedJob
 This plugin depends on delayed job.
 Run the following commands to set it up:
 
-```bundle install
+```
+bundle install
 rails generate delayed_job:active_record
 rake db:migrate
 ```
