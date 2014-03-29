@@ -2,12 +2,12 @@
 
 ## About
 
-ffcrm_mailchimp is designed to work with the popular open source [Fat Free CRM](http://www.fatfreecrm.com).
+FFCRM Mailchimp is designed to work with the popular open source [Fat Free CRM](http://www.fatfreecrm.com).
 
-ffcrm_mailchimp is Charityware.  You can use and copy it as much as you like, but you are
+FFCRM Mailchimp is Charityware.  You can use and copy it as much as you like, but you are
 encouraged to make a donation for those in need via the Crossroads Foundation (the organisation who built this plugin). See [http://www.crossroads.org.hk/](http://www.crossroads.org.hk/)
 
-This plugin enables FFCRM to listen for MailChimp subscribes, unsubscribes, profile updates, email changed events performed by a MailChimp subscriber, MailChimp Admin or the MailChimp API and update contact records accordingly. Additionally, in FFCRM, contact creates, updates, deletes and merges are also communicated back to Mailchimp.
+This plugin enables Fat Free CRM to listen for MailChimp subscribes, unsubscribes, profile updates, email changed events performed by a MailChimp subscriber, MailChimp Admin or the MailChimp API and update contact records accordingly. Additionally, in FFCRM, contact creates, updates, deletes and merges are also communicated back to Mailchimp.
 
 
 ## Installation
@@ -58,7 +58,6 @@ This button will force all list subscription data in FFCRM to be removed and upd
 
 This is a simple, one-way update only. It only adds MailChimp data to FFCRM. It does not make any changes to MailChimp records. E.g. If James Smith is marked in FFCRM as subscribed to “Special Deals” but he is not subscribed in MailChimp (a case that can occur if you disable integration on a list), this button will remove the “Special Deals” subscription in FFCRM.
 
-
 ### Clear all mailchimp data in CRM
 
 This button completely removes any MailChimp subscriber info in FFCRM. There is no “undo”.
@@ -76,48 +75,36 @@ In addition to removing any Mailchimp list data stored in FFCRM, it will also de
 
 If you delete a list in MailChimp or disable its integration, that list will remain visible as a checkbox on FFCRM contacts and any existing data will remain untouched in FFCRM (the plugin doesn’t clean it out). To get rid of a list entirely clear all plugin settings and data in FFCRM, then reconfigure the plugin and finally, update your data again from MailChimp.
 
-
-#### Contacts have to be valid
+### Contacts have to be valid
 
 A MailChimp subscriber must have enough data to be valid in FFCRM or the FFCRM plugin will completely ignore it. By default, FFCRM requires a contact to have both a first name and a last name (this can be changed in FFCRM’s secret settings so ask your system administrator if you are not sure.) So, for example, if you add a subscriber to MailChimp without providing a first/last name, MailChimp will send the new subscriber data to FFCRM but FFCRM will ignore it (assuming you use FFCRM’s default settings).
 
-#### Duplicate email addresses are not good
-To stay sane, this plugin will not carry out an action if it will cause duplicate email addresses on different contacts in MailChimp (even though MailChimp itself allows this as long as the contacts are not on the same list).
+### Duplicate email addresses are not good
 
-* If you create/edit a contact in FCRM, the form will not pass validation if the primary email of that contact is the same as the primary email address of another contact AND both contacts have one or more MailChimp lists selected. This seemed like the best compromise as it allows you to have duplicate emails in FFCRM but NOT if that affects MailChimp.
-* If MailChimp sends data to FFCRM (e.g. to subscribe a new user) the plugin will perform the same validation described above. If validation fails, the plugin will add a comment all affected contacts indicating the problem so someone can go resolve it.
+If two contacts have the same email address in FFCRM, this plugin will pick the first one.
 
-How it functions
-----------------
 
-###By default, the plugin will update FFCRM for the folowing MailChimp actions###
+## How it functions
 
-Note: This assumes you have not tweaked the advanced integration settings on the MailChimp side.
+By default, the plugin will update FFCRM for the folowing MailChimp API actions:
 
 * Subscribes: will edit matching contact and log a history item or will create a new contact
 * Unsubscribes: same as above
-* Profiles Updates: same as above. Currently the plugin only synchronises FIrst Name, Last Name and email address.
-* Cleaned Addresses: same as above. Note this does mean that MailChimp will remove the email address from your FFCRM contact.
-* Email Changed: will automatically change the contact’s email address and will log a history item
-* Campaign Sending: will just log a history item
+* Profile updates: same as above. Currently the plugin only synchronises First Name, Last Name and email address.
+* Email change: will automatically change the contact’s email address and will log a history item
 
+The plugin will update MailChimp for the following FFCRM actions performed on a contact:
 
-### The plugin will update MailChimp for the following FFCRM actions performed on a contact###
-
-Note: currently he plugin only synchronises First Name, Last Name and email address
+Note: currently the plugin only synchronises First Name, Last Name and email address
 
 * Subscribe: when a new contact is created or an existing one is edited and a MailChimp list is indicated
 * Unsubscribe: Can happen when a contact is edited, deleted or merged (see below)
-* Profile Update: Can hapen when a contact is created or edited
-* Merge two contacts: will delete one MailChimp contact and probably update another one (assuming it was changed in merge)
+* Profile Update: Can happen when a contact is created or edited
+* Merge two contacts: will delete one MailChimp contact and update list subscription information for the merged one. A FFCRM merge is really two separate actions: a delete of one contact and an update of another.
 
-When you use FFCRM to subscribe someone to a MailChimp list, the person will not be sent a double opt-in email from MailChimp. If you want them to get one, add them via MailChimp and FFCRM will be updated when they confirm by clicking the link in the email
+When you use FFCRM to subscribe someone to a MailChimp list, the person will not be sent a double opt-in email from MailChimp. If you want them to get one, add them via MailChimp and FFCRM will be updated when they confirm by clicking the link in the email.
 
-Note: If you change a contact in FFCRM and the plugin cannot update MailChimp for some reason (e.g. because you had deleted that MailChimp list without disabling its FFCRM integration) the plugin will undo the change to the contact  in FFCRM and will email you to inform you of the failure. So if I add “James Smith” to the “Daily Promotion” list but that list has been deleted from MailChimp then the plugin will later un-check the box for that list on James Smith and will email me to tell me what happened.
-
-
-Limitations
------------
+## Limitations
 
 * This plugin will only sync a contact’s main email address . You can’t, for example, have a contact subscribed to one list with their primary email address and another list with their alternative email address.
 * This plugin only syncs FFCRM contacts (not accounts or other objects).
@@ -126,8 +113,8 @@ Limitations
 * You can’t use this plugin to batch subscribe you FFCRM contacts to MailChimp. Partly because that is not something we need (we want MailChimp to be the final word in who is on a list) and partly because it’s dangerous (could get your MailChimp account flagged)
 
 
-Todo
-----
+## Todo
 
 * Add support for cleaned addresses
 * Add support for creating a 'campaign sent' note on the contact.
+* Resolve the case where there are two contacts in FFCRM with the same email address - form should not pass validation if a mailchimp list is checked and there is a duplicate email address. This seems like the best compromise as it allows you to have contacts with duplicate emails in FFCRM but NOT if that affects MailChimp.
