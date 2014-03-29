@@ -41,7 +41,6 @@ describe FfcrmMailchimp::ListSubscription do
     }
     it {
       subscription.list_id = nil
-      subscription.groupings = nil
       expect( subscription.wants_to_subscribe? ).to eql(false)
     }
   end

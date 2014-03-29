@@ -17,6 +17,7 @@ module FfcrmMailchimp
         api_key: options[:api_key],
         user_id: options[:user_id],
         iron_mq: options[:iron_mq],
+        verbose: options[:verbose],
       }
     end
 
@@ -39,6 +40,10 @@ module FfcrmMailchimp
     # Is the inbound request from Iron MQ
     def iron_mq
       config.present? ? config[:iron_mq] : nil
+    end
+
+    def verbose
+      config.present? ? config[:verbose] == 'true' : false
     end
 
     #

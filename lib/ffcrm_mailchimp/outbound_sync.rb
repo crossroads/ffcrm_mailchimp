@@ -17,10 +17,16 @@ module FfcrmMailchimp
     # Update mailchimp subscription for all the mailchimp lists linked in CRM
     # Handles unsubscribes when necessary
     def subscribe
-      return if subscribed_email.blank? # we can't do anything without an email address
+      if subscribed_email.blank?
+        FfcrmMailchimp.logger("OutboundSync: no email address for #{@record.class}##{@record.id}. Cannot proceed.")
+        return
+      end
       mailchimp_list_field_names.each do |column|
         subscription = ListSubscription.new( @record.send(column) )
-        break if !subscription.source_is_ffcrm? # Stop if this is a webhook from mailchimp
+        if !subscription.source_is_ffcrm? # Stop if this is a webhook from mailchimp
+          FfcrmMailchimp.logger("OutboundSync: ignoring updates to #{@record.class}##{@record.id} (change initiated by webhook)")
+          break
+        end
         # Note: it's important to get list_id from the column not the ListSubscription
         # because if list_id is missing in ListSubscription then that means 'unsubscribe' from list
         list_id = list_id_from_column(column)
@@ -33,12 +39,20 @@ module FfcrmMailchimp
       end
     end
 
+    def self.unsubscribe(email)
+      new(nil, nil).unsubscribe(email)
+    end
+
     #
     # When a contact is deleted, remove all mailchimp subscriptions
-    def unsubscribe
-      return if subscribed_email.blank? # we can't do anything without an email address
-      ffcrm_list_ids.each do |list_id|
-        unsubscribe_from_mailchimp_list(list_id)
+    def unsubscribe(email)
+      if email.blank? # we can't do anything without an email address
+        FfcrmMailchimp.logger("OutboundSync: cannot unsubscribe contact without an email address")
+      else
+        FfcrmMailchimp.logger("OutboundSync: unsubscribing #{email} from all mailchimp lists.")
+        ffcrm_list_ids.each do |list_id|
+          unsubscribe_from_mailchimp_list(list_id, email)
+        end
       end
     end
 
@@ -48,9 +62,11 @@ module FfcrmMailchimp
 
     #
     # Is the user already subscribed in Mailchimp?
-    def is_subscribed_mailchimp_user?(list_id)
-      api_query = gibbon.lists.member_info({ id: list_id, emails: [{ email: subscribed_email }] })
-      api_query["error_count"].zero? && api_query["data"].first["status"] == "subscribed"
+    def is_subscribed_mailchimp_user?(list_id, email = subscribed_email)
+      api_query = gibbon.lists.member_info({ id: list_id, emails: [{ email: email }] })
+      result = api_query["error_count"].zero? && api_query["data"].first["status"] == "subscribed"
+      FfcrmMailchimp.logger("OutboundSync: #{email} is #{result ? 'subscribed' : 'not subscribed'} on list #{list_id}. Reply: #{api_query}")
+      result
     end
 
     #
@@ -64,9 +80,9 @@ module FfcrmMailchimp
       params[:merge_vars].merge!('new-email' => new_email) if subscribed_email != new_email
       if is_subscribed_mailchimp_user?(list_id)
         params.merge!( update_existing: "true" )
-        Rails.logger.info("FfcrmMailchimp: updated subscription for contact #{@record.id} on list #{list_id}")
+        FfcrmMailchimp.logger("OutboundSync: updating subscription for contact #{@record.id} on list #{list_id} using following params #{params}")
       else
-        Rails.logger.info("FfcrmMailchimp: subscribed contact #{@record.id} to list #{list_id}")
+        FfcrmMailchimp.logger("OutboundSync subscribing contact #{@record.id} to list #{list_id} using following params #{params}")
       end
       gibbon.lists.subscribe(params)
     end
@@ -76,10 +92,13 @@ module FfcrmMailchimp
     # Note: delete_member is true, this means the person is completely deleted
     # from the list rather than being unsubscribed - they can't be re-added by us
     # if they are unsubscribed.
-    def unsubscribe_from_mailchimp_list(list_id)
-      if is_subscribed_mailchimp_user?(list_id)
-        gibbon.lists.unsubscribe( id: list_id, email: { email: subscribed_email, delete_member: true, send_notify: false } )
-        Rails.logger.info("FfcrmMailchimp: unsubscribed contact #{@record.id} from list #{list_id}")
+    def unsubscribe_from_mailchimp_list(list_id, email = subscribed_email)
+      if is_subscribed_mailchimp_user?(list_id, email)
+        params = { id: list_id, email: { email: email, delete_member: true, send_notify: false } }
+        FfcrmMailchimp.logger("OutboundSync: unsubscribing #{email} from list #{list_id} using following params: #{params}")
+        gibbon.lists.unsubscribe( params )
+      else
+        FfcrmMailchimp.logger("OutboundSync: cannot unsubscribe contact as #{email} is not subscribed to the list #{list_id}")
       end
     end
 

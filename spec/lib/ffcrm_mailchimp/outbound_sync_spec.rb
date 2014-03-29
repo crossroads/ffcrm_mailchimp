@@ -69,8 +69,8 @@ describe FfcrmMailchimp::OutboundSync do
       it "should unsubscribe the user from the mailchimp list" do
         sync.stub(:subscribed_email).and_return(email)
         sync.stub(:ffcrm_list_ids).and_return([list_id])
-        sync.should_receive(:unsubscribe_from_mailchimp_list).with(list_id)
-        sync.unsubscribe
+        sync.should_receive(:unsubscribe_from_mailchimp_list).with(list_id, email)
+        sync.unsubscribe(email)
       end
     end
 
@@ -78,7 +78,7 @@ describe FfcrmMailchimp::OutboundSync do
       it "should not unsubscribe the user from the mailchimp list" do
         sync.stub(:subscribed_email).and_return(nil)
         sync.should_not_receive(:unsubscribe_from_mailchimp_list)
-        sync.unsubscribe
+        sync.unsubscribe('')
       end
     end
 
@@ -172,7 +172,7 @@ describe FfcrmMailchimp::OutboundSync do
     before { sync.stub(:subscribed_email).and_return(email) }
 
     it "should unsubscribe existing contact from mailchimp list" do
-      sync.stub(:is_subscribed_mailchimp_user?).with(list_id).and_return(true)
+      sync.stub(:is_subscribed_mailchimp_user?).with(list_id, email).and_return(true)
       Gibbon::API.any_instance.stub_chain('lists').and_return(mock_api_call)
       mock_api_call.should_receive('unsubscribe') do |args|
         expect( args[:id] ).to eql( list_id )
@@ -184,7 +184,7 @@ describe FfcrmMailchimp::OutboundSync do
     end
 
     it "should not unsubscribe a contact that isn't subscribed" do
-      sync.stub(:is_subscribed_mailchimp_user?).with(list_id).and_return(false)
+      sync.stub(:is_subscribed_mailchimp_user?).with(list_id, email).and_return(false)
       Gibbon::API.any_instance.stub_chain('lists').and_return(mock_api_call)
       mock_api_call.should_not_receive('unsubscribe')
       sync.send(:unsubscribe_from_mailchimp_list, list_id)

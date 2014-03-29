@@ -29,6 +29,11 @@
       %label.label.top{ for: 'iron_mq' }
         Use Iron MQ for inbound requests?
 
+      %br
+      = check_box_tag('verbose', 'true', @config.verbose == true)
+      %label.label.top{ for: 'verbose' }
+        Turn on verbose logging?
+
       %p
       = submit_tag 'Save', name: 'update', style: "width:60px"
 

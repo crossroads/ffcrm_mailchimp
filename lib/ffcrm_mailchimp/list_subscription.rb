@@ -31,7 +31,7 @@ module FfcrmMailchimp
     #
     # Do we have all the information necessary to subscribe to the list?
     def wants_to_subscribe?
-     source_is_ffcrm? && (has_list? || has_groupings?)
+     source_is_ffcrm? && has_list?
     end
 
     #

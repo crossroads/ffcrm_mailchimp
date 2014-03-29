@@ -14,15 +14,18 @@ module FfcrmMailchimp
     def self.subscribe(record)
       changes = FfcrmMailchimp::Changes.new(record)
       if changes.need_sychronization?
+        FfcrmMailchimp.logger("Queueing update to mailchimp for #{record.class}##{record.id}")
         FfcrmMailchimp::OutboundSync.new(record, changes).delay.subscribe
+      else
+        FfcrmMailchimp.logger("No changes require update to mailchimp for #{record.class}##{record.id}")
       end
     end
 
     #
     # Always need to sync if contact is deleted.
     def self.unsubscribe(record)
-      changes = FfcrmMailchimp::Changes.new(record)
-      FfcrmMailchimp::OutboundSync.new(record, changes).delay.unsubscribe
+      FfcrmMailchimp.logger("Scheduled mailchimp list deletion for deleted contact #{record.class}##{record.id} - #{record.email}")
+      FfcrmMailchimp::OutboundSync.delay.unsubscribe(record.email)
     end
 
   end
