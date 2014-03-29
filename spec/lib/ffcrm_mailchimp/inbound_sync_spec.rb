@@ -215,8 +215,10 @@ describe FfcrmMailchimp::InboundSync do
   def create_custom_field
     field_group = FactoryGirl.create(:field_group, klass_name: "Contact")
     settings = { list_id: list_id }.with_indifferent_access
-    CustomFieldMailchimpList.create( as: 'mailchimp_list', field_group_id: field_group.id,
+    field = CustomFieldMailchimpList.create( as: 'mailchimp_list', field_group_id: field_group.id,
       label: "custom_field", name: "custom_field_#{rand(1234)}", settings: settings )
+    field.klass.reset_column_information
+    field
   end
 
   def delete_custom_field
