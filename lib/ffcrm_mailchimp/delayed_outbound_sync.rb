@@ -16,7 +16,6 @@ module FfcrmMailchimp
       if changes.need_sychronization?
         FfcrmMailchimp.logger("Queueing update to mailchimp for #{record.class}##{record.id}")
         FfcrmMailchimp::OutboundSync.new(record, changes).delay.subscribe
-        #~ FfcrmMailchimp::OutboundSync.new(record, changes).subscribe
       else
         FfcrmMailchimp.logger("No changes require update to mailchimp for #{record.class}##{record.id}")
       end
