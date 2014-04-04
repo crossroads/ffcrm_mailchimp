@@ -18,6 +18,7 @@ module FfcrmMailchimp
         user_id: options[:user_id],
         iron_mq: options[:iron_mq],
         verbose: options[:verbose],
+        address_type: options[:address_type],
       }
     end
 
@@ -44,6 +45,11 @@ module FfcrmMailchimp
 
     def verbose
       config.present? ? config[:verbose] == 'true' : false
+    end
+
+    # If creating an address, sets the default type to create as
+    def address_type
+      config.present? ? config[:address_type] : 'Home'
     end
 
     #

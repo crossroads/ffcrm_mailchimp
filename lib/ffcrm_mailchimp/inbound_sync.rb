@@ -27,6 +27,8 @@ module FfcrmMailchimp
         email_changed
       when "unsubscribe"
         unsubscribe
+      when "cleaned"
+        clean
       else
       end
     end
@@ -40,21 +42,22 @@ module FfcrmMailchimp
     #
     # Subscribe the user to the mailing list and create one if they don't exist
     def subscribe
-      contact = Contact.find_by_email( data.email ) || Contact.new( email: data.merges_email )
-      contact.first_name = data.first_name
-      contact.last_name = data.last_name
-      contact.send("#{custom_field.name}=", cf_attributes_for(data) )
-      contact.save
+      c = contact || Contact.new( email: data.merges_email )
+      c.first_name = data.first_name
+      c.last_name = data.last_name
+      c.send("#{custom_field.name}=", cf_attributes_for(data) )
+      c.addresses << data.address if data.has_address? # update address if one is provided
+      c.save
     end
 
     #
     # Update the name and list preferences for a particular contact
     def profile_update
-      contact = Contact.find_by_email( data.email )
       if contact.present?
         contact.first_name = data.first_name
         contact.last_name = data.last_name
         contact.send("#{custom_field.name}=", cf_attributes_for(data))
+        contact.postal_address = data.to_address if data.has_address? # update address if one is provided
         contact.save
       end
     end
@@ -78,9 +81,29 @@ module FfcrmMailchimp
     #
     # Unsubscribe the user
     def unsubscribe
-      contact = Contact.find_by_email( data.email )
       if contact.present?
         contact.update_attributes( custom_field.name => {} )
+      end
+    end
+
+    #
+    # Clean a user off a particular list
+    def clean
+      unsubscribe
+      if (user_id = FfcrmMailchimp.config.user_id)
+        contact.comments.create!( user_id: user_id, comment: clean_reason )
+        contact.update_attribute(:subscribed_users, contact.subscribed_users - [user_id]) # don't subscribe Mailchimp user to email updates
+      end
+    end
+
+    def clean_reason
+      case data.reason
+      when 'hard'
+        "Mailchimp has automatically cleaned #{data.email} from the #{custom_field.label} list because of a hard bounce."
+      when 'abuse'
+        "Mailchimp has automatically cleaned #{data.email} from the #{custom_field.label} list because of an abuse report."
+      else
+        "Mailchimp has automatically cleaned #{data.email} from the #{custom_field.label} list (reason given: #{data.reason})"
       end
     end
 
@@ -105,6 +128,10 @@ module FfcrmMailchimp
     # Returns a hash
     def cf_attributes_for(data)
       data.to_list_subscription
+    end
+
+    def contact
+      @contact ||= Contact.find_by_email( data.email )
     end
 
   end

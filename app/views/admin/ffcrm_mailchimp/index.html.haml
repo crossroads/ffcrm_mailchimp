@@ -34,6 +34,13 @@
       %label.label.top{ for: 'verbose' }
         Turn on verbose logging?
 
+      %br
+      - address_types = Address.select('distinct address_type').where(addressable_type: 'Contact').pluck(:address_type)
+      - address_type_options = options_for_select(address_types, @config.address_type)
+      = select_tag('address_type', address_type_options)
+      %label.label.top{ for: 'address_type' }
+        Specify which address type to create (if address data is present).
+
       %p
       = submit_tag 'Save', name: 'update', style: "width:60px"
 
@@ -62,3 +69,22 @@
   Destroy all 'Mailchimp List' custom fields and associated data from mailchimp.
   NOTE: this is INCREDIBLY DESTRUCTIVE and should only be used if you want to
   hard reset your CRM instance back to a state before this plugin was installed.
+
+%hr
+
+%h2 Mailchimp configuration notes
+
+%p
+  Mailchimp allows you to add other fields to your list data and assign specific merge tags to them.
+  This integration currently understands the merge tags listed below. You must set these up in the Mailchimp "List settings and *|MERGE|* tags" section if you want CRM to merge them.
+
+  %ul
+    %li FNAME - first name
+    %li LNAME - last name
+    %li PHONE - phone number
+    %li STREET1 - address street 1
+    %li STREET2 - address street 2
+    %li CITY - city
+    %li STATE - state
+    %li ZIP - zip code
+    %li COUNTRY - country

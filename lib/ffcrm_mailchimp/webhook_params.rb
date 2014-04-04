@@ -41,6 +41,53 @@ module FfcrmMailchimp
       data['merges']['LNAME']
     end
 
+    def phone
+      data['merges']['PHONE']
+    end
+
+    def street1
+      data['merges']['STREET1']
+    end
+
+    def street2
+      data['merges']['STREET2']
+    end
+
+    def city
+      data['merges']['CITY']
+    end
+
+    def state
+      data['merges']['STATE']
+    end
+
+    def zipcode
+      data['merges']['ZIP']
+    end
+
+    def country
+      data['merges']['COUNTRY']
+    end
+
+    # E.g. Zambia => "ZM"
+    def country_code
+      Hash[ActionView::Helpers::FormOptionsHelper::COUNTRIES][country]
+    end
+
+    def address
+      address_type = FfcrmMailchimp.config.address_type
+      Address.new(address_type: address_type, street1: street1, street2: street2, city: city, state: state, zipcode: zipcode, country: country_code)
+    end
+
+    # how to we know if we have sufficient data for a real address
+    def has_address?
+      street1.present? and city.present? and country.present?
+    end
+
+    def reason
+      data['reason']
+    end
+
     def data
       (super || {}).with_indifferent_access # this is deep so affects data['merges'] too
     end
