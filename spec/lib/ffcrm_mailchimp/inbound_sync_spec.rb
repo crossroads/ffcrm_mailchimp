@@ -92,7 +92,8 @@ describe FfcrmMailchimp::InboundSync do
     context "when user exists" do
 
       it "should update existing user" do
-        Contact.should_receive(:find_by_email).with( email ).and_return( contact )
+        mock_contact = double.tap{ |d| d.stub_chain('order.first').and_return(contact) }
+        Contact.should_receive(:where).with( email: email ).and_return( mock_contact )
         Contact.should_not_receive(:new)
         sync.send(:subscribe)
         expect( contact.first_name ).to eql( first_name )
@@ -111,7 +112,8 @@ describe FfcrmMailchimp::InboundSync do
     let(:params)  { FactoryGirl.build(:mc_webhook, type: 'profile', data: data) }
     before {
       @cf = create_custom_field
-      Contact.stub(:find_by_email).with( email ).and_return( contact )
+      mock_contact = double.tap { |d| d.stub_chain('order.first').and_return(contact) }
+      Contact.stub(:where).with( email: email ).and_return( mock_contact )
       sync.send(:profile_update)
     }
     after { delete_custom_field }
@@ -127,13 +129,14 @@ describe FfcrmMailchimp::InboundSync do
 
     let(:params)   { FactoryGirl.build(:mc_webhook, type: 'upemail', data: data) }
     let(:contact2) { FactoryGirl.build(:contact) }
+    let(:old_email_contact) { stub_chain('order.first').and_return(contact) }
+    let(:new_email_contact) { stub_chain('order.first').and_return(nil) }
 
     context "when new email doesn't exist" do
       it "should update email" do
-        Contact.should_receive(:find_by_email).with( old_email ).and_return( contact )
-        Contact.should_receive(:find_by_email).with( new_email ).and_return( nil )
+        contact = FactoryGirl.create(:contact, email: old_email)
         sync.send(:email_changed)
-        expect( contact.email ).to eq( new_email )
+        expect( contact.reload.email ).to eq( new_email )
       end
     end
 
@@ -144,22 +147,22 @@ describe FfcrmMailchimp::InboundSync do
       after  { delete_custom_field }
 
       it "should unsubscribe the old_email user" do
-        Contact.should_receive(:find_by_email).with( old_email ).and_return( contact )
-        Contact.should_receive(:find_by_email).with( new_email ).and_return( contact2 )
-        contact.should_receive(:update_attributes) do |args|
+        old_contact = FactoryGirl.create(:contact, email: old_email)
+        new_contact = FactoryGirl.create(:contact, email: new_email)
+        mock_old_contact = double.tap{ |d| d.stub_chain('order.first').and_return(old_contact) }
+        mock_new_contact = double.tap{ |d| d.stub_chain('order.first').and_return(new_contact) }
+        Contact.stub(:where).with(email: old_email).and_return( mock_old_contact )
+        Contact.stub(:where).with(email: new_email).and_return( mock_new_contact )
+        old_contact.should_receive(:update_attributes) do |args|
           expect(args[ @cf.name ] ).to eql( {} )
         end
         sync.send(:email_changed)
-        expect( contact.email ).to_not eq( new_email )
-        expect( contact.email ).to_not eq( new_email )
       end
 
     end
 
     context "when contact with old_email doesn't exist" do
       it "should ignore the update" do
-        Contact.should_receive(:find_by_email).with( old_email ).and_return( nil )
-        Contact.should_receive(:find_by_email).with( new_email ).and_return( nil )
         Contact.any_instance.should_not_receive(:update_attributes)
         sync.send(:email_changed)
       end
@@ -176,7 +179,8 @@ describe FfcrmMailchimp::InboundSync do
 
     context "when user is found" do
       it "should unsubscribe" do
-        Contact.should_receive(:find_by_email).with( email ).and_return( contact )
+        mock_contact = double.tap{ |d| d.stub_chain('order.first').and_return(contact) }
+        Contact.should_receive(:where).with( email: email ).and_return( mock_contact )
         contact.should_receive(:update_attributes) do |args|
           expect(args[ @cf.name ] ).to eql( {} )
         end
@@ -186,7 +190,8 @@ describe FfcrmMailchimp::InboundSync do
 
     context "when user is not found" do
       it "should not unsubscribe" do
-        Contact.should_receive(:find_by_email).with( email ).and_return( nil )
+        mock_contact = double.tap{ |d| d.stub_chain('order.first').and_return(nil) }
+        Contact.should_receive(:where).with( email: email ).and_return( mock_contact )
         Contact.any_instance.should_not_receive(:update_attributes)
         sync.send(:unsubscribe)
       end
@@ -204,6 +209,22 @@ describe FfcrmMailchimp::InboundSync do
 
     context "when list_id does not have an associated custom_field" do
       it { expect( sync.send(:custom_field) ).to eql( nil ) }
+    end
+
+  end
+
+  describe "contact" do
+
+    context "when more than one contact with same email" do
+
+      let(:contact)  { FactoryGirl.create(:contact, email: email) }
+      let(:contact2) { FactoryGirl.create(:contact, email: email) }
+
+      it "should always pick contact with lowest id" do
+        correct_contact = contact.id < contact2.id ? contact : contact2
+        expect( sync.send(:contact) ).to eql( correct_contact )
+      end
+
     end
 
   end

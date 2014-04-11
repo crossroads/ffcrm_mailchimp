@@ -68,8 +68,8 @@ module FfcrmMailchimp
     #   because a profile_update will be fired shortly which will update the new profile subscriptions.
     def email_changed
       return if data.new_email.blank? or data.old_email.blank?
-      old_contact = Contact.find_by_email( data.old_email )
-      new_contact = Contact.find_by_email( data.new_email )
+      old_contact = Contact.where(email: data.old_email).order(:id).first
+      new_contact = Contact.where(email: data.new_email).order(:id).first
       return if !old_contact.present?
       if !new_contact.present?
         old_contact.update_attributes( email: data.new_email )
@@ -131,7 +131,7 @@ module FfcrmMailchimp
     end
 
     def contact
-      @contact ||= Contact.find_by_email( data.email )
+      @contact ||= Contact.where(email: data.email).order(:id).first
     end
 
   end
