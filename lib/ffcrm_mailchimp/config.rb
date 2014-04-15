@@ -14,14 +14,33 @@ module FfcrmMailchimp
     # Used in the admin section to apply settings
     def update!(options)
       @config = Setting.ffcrm_mailchimp = {
+        sync_disabled: options[:sync_disabled],
         api_key: options[:api_key],
-        user_id: options[:user_id],
+        user_id: options[:user_id],        
         iron_mq: options[:iron_mq],
         verbose: options[:verbose],
+        track_phone: options[:track_phone],
+        track_address: options[:track_address],
         address_type: options[:address_type],
+        track_consent: options[:track_consent],
+        consent_field_name: options[:consent_field_name],
       }
     end
 
+    #
+    # A deadman switch to turn off the sync temporarily if needed.
+    def sync_disabled
+      config.present? ? config[:sync_disabled] == 'true' : false
+    end
+    
+    def sync_disabled?
+      sync_disabled
+    end
+    
+    def sync_enabled?
+      !sync_disabled?
+    end
+    
     #
     # The api key is used to connect to Mailchimp accounts.
     def api_key
@@ -46,10 +65,31 @@ module FfcrmMailchimp
     def verbose
       config.present? ? config[:verbose] == 'true' : false
     end
+    
+    # Are we tracking phone?
+    def track_phone
+      config.present? ? config[:track_phone] == 'true' : false
+    end
+    
+    # Are we tracking address?
+    def track_address
+      config.present? ? config[:track_address] == 'true' : false
+    end
 
     # If creating an address, sets the default type to create as
     def address_type
       config.present? ? config[:address_type] : 'Home'
+    end
+
+    # Are we tracking the CONSENT merge tag?
+    def track_consent
+      config.present? ? config[:track_consent] == 'true' : false
+    end
+    
+    # If there is a custom direct marketting consent field, enable it to be selected
+    # otherwise, assume it's fat_free_crm's do_not_call field.
+    def consent_field_name
+      config.present? ? config[:consent_field_name] : 'do_not_call'
     end
 
     #

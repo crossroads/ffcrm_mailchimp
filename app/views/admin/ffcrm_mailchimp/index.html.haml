@@ -7,9 +7,16 @@
     = form_tag 'ffcrm_mailchimp', method: 'put' do
 
       %p
+      
+      %br
+      = check_box_tag('sync_disabled', 'true', @config.sync_disabled?)
+      %label.label.top{ for: 'sync_disabled' }
+        Disable sync? If checked, sync will not work in either direction.
 
+      %p
+      
       Please enter the API key from your mailchimp account.
-      %br/
+      %br
       .label.top.req
         Api key:
         = text_field_tag 'api_key', @config.api_key, size: 30, required: true
@@ -35,11 +42,35 @@
         Turn on verbose logging?
 
       %br
-      - address_types = Address.select('distinct address_type').where(addressable_type: 'Contact').pluck(:address_type)
-      - address_type_options = options_for_select(address_types, @config.address_type)
-      = select_tag('address_type', address_type_options)
-      %label.label.top{ for: 'address_type' }
-        Specify which address type to create (if address data is present).
+      = check_box_tag('track_phone', 'true', @config.track_phone == true)
+      %label.label.top{ for: 'track_phone' }
+        Track phone via the PHONE merge tag?
+      
+      %p
+        = check_box_tag('track_address', 'true', @config.track_address == true)
+        %label.label.top{ for: 'track_address' }
+          Track address via the following merge tags? STREET1, STREET2, CITY, STATE, ZIP, COUNTRY
+
+        %br
+        - address_types = Address.select('distinct address_type').where(addressable_type: 'Contact').pluck(:address_type)
+        - address_type_options = options_for_select(address_types, @config.address_type)
+        = select_tag('address_type', address_type_options)
+        %label.label.top{ for: 'address_type' }
+          Specify which address type to create (if address data is present).
+
+      %p
+        = check_box_tag('track_consent', 'true', @config.track_consent == true)
+        %label.label.top{ for: 'track_consent' }
+          Track 'Direct Marketing Consent' within Mailchimp. If enabled, sends 'Yes' or 'No' values to the CONSENT merge tag. Expects the same in return from Mailchimp.
+        
+        %br
+        -# fields = Contact.columns.select{|c| c.type == :boolean}.map(&:name)
+        - fields = Contact.columns.map(&:name)
+        - field_options = options_for_select(fields, @config.consent_field_name)
+        = select_tag('consent_field_name', field_options)
+        %label.label.top{ for: 'field_options' }
+          Specify which field is used as the 'Direct Marketing Consent' field.
+          It should be a text column (e.g. for radio buttons) with the words 'Yes' and 'No' as options.
 
       %p
       = submit_tag 'Save', name: 'update', style: "width:60px"
@@ -88,3 +119,4 @@
     %li STATE - state
     %li ZIP - zip code
     %li COUNTRY - country
+    %li CONSENT - has direct marketing consent been given

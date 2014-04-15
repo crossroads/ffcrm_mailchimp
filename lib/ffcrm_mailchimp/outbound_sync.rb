@@ -77,6 +77,7 @@ module FfcrmMailchimp
       return if new_email.blank?
       params = { id: list_id, email: { email: subscribed_email }, double_optin: false,
                  merge_vars: { FNAME: @record.first_name, LNAME: @record.last_name, groupings: subscription.groupings } }
+      params[:merge_vars].merge!( extra_merge_vars )
       params[:merge_vars].merge!('new-email' => new_email) if subscribed_email != new_email
       if is_subscribed_mailchimp_user?(list_id)
         params.merge!( update_existing: "true" )
@@ -135,6 +136,31 @@ module FfcrmMailchimp
 
     def config
       FfcrmMailchimp.config
+    end
+
+    #
+    # Returns a hash of address, phone, and consent merge vars for updating mailchimp
+    def extra_merge_vars
+      merge_vars = {}
+      if FfcrmMailchimp.config.track_address
+        address_type = FfcrmMailchimp.config.address_type
+        address = @record.addresses.where(address_type: address_type).first
+        if address.present?
+          merge_vars.merge!( 'STREET1' => address.street1, 'STREET2' => address.street2,
+                             'CITY' => address.city, 'STATE' => address.state, 'ZIP' => address.zipcode,
+                             'COUNTRY' => Hash[ActionView::Helpers::FormOptionsHelper::COUNTRIES].invert[address.country] )
+        end
+      end
+      if FfcrmMailchimp.config.track_phone
+        merge_vars['PHONE'] = @record.phone
+      end
+      if FfcrmMailchimp.config.track_consent
+        consent_field_name = FfcrmMailchimp.config.consent_field_name
+        if @record.attributes.keys.include?(consent_field_name)
+          merge_vars['CONSENT'] = @record.send(consent_field_name) # should be 'Yes' or 'No'
+        end
+      end
+      merge_vars
     end
 
   end

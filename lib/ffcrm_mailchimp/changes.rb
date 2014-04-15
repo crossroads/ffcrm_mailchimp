@@ -5,7 +5,7 @@ module FfcrmMailchimp
   #
   # Helps us find the changes that we're interested in sync'ing to Mailchimp
   class Changes
-    attr_accessor :email_change, :list_columns_changed, :first_name_change, :last_name_change
+    attr_accessor :email_change, :list_columns_changed, :first_name_change, :last_name_change, :phone_change, :address_change, :consent_change
 
     def initialize(record)
       @email_change = record.email_change
@@ -15,12 +15,15 @@ module FfcrmMailchimp
         FfcrmMailchimp.config.mailchimp_list_fields.map do |field|
           record.send("#{field.name}_changed?") ? field.name : nil
         end.compact
+      @phone_change = record.phone_change
+      #@address_change = record.address_change
+      @consent_change = record.send("#{config.consent_field_name}_change")
     end
 
     #
     # Analyse the changes that have taken place and decide if we need to tell mailchimp
     def need_sychronization?
-      email_changed? or name_changed? or list_columns_changed?
+      email_changed? or name_changed? or list_columns_changed? or phone_changed? or consent_changed?
     end
 
     # Changes to the email address on the record
@@ -43,6 +46,18 @@ module FfcrmMailchimp
 
     def list_columns_changed?
       @list_columns_changed.any?
+    end
+    
+    def phone_changed?
+      config.track_phone and @phone_change.present?
+    end
+    
+    def consent_changed?
+      config.track_consent and @consent_change.present?
+    end
+    
+    def config
+      FfcrmMailchimp.config
     end
 
   end

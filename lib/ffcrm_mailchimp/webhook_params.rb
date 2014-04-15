@@ -69,6 +69,10 @@ module FfcrmMailchimp
       data['merges']['COUNTRY']
     end
 
+    def consent
+      data['merges']['CONSENT']
+    end
+    
     # E.g. Zambia => "ZM"
     def country_code
       Hash[ActionView::Helpers::FormOptionsHelper::COUNTRIES][country]

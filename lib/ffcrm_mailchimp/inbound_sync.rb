@@ -18,6 +18,10 @@ module FfcrmMailchimp
     # Process the webhook and apply changes to CRM contacts
     def process
       return unless list_field_exists?
+      if config.sync_disabled?
+        FfcrmMailchimp.logger("Sync disabled. Ignoring incoming #{data.type}")
+        return
+      end
       case data.type
       when "subscribe"
         subscribe
@@ -46,7 +50,9 @@ module FfcrmMailchimp
       c.first_name = data.first_name
       c.last_name = data.last_name
       c.send("#{custom_field.name}=", cf_attributes_for(data) )
-      c.addresses << data.address if data.has_address? # update address if one is provided
+      c.phone = data.phone if config.track_phone and !data.phone.blank? # update phone if one is provided
+      c.addresses << data.address if config.track_address and data.has_address? # update address if one is provided
+      c.send("#{config.consent_field_name}=", data.consent) if config.track_consent and data.consent.present? # update consent field if one is provided
       c.save
     end
 
@@ -57,7 +63,9 @@ module FfcrmMailchimp
         contact.first_name = data.first_name
         contact.last_name = data.last_name
         contact.send("#{custom_field.name}=", cf_attributes_for(data))
-        contact.postal_address = data.to_address if data.has_address? # update address if one is provided
+        contact.phone = data.phone if config.track_phone and !data.phone.blank? # update phone if one is provided
+        contact.send("#{config.address_type.downcase}_address=", data.address) if config.track_address and data.has_address? # update address if one is provided
+        contact.send("#{config.consent_field_name}=", data.consent) if config.track_consent and data.consent.present? # update consent field if one is provided
         contact.save
       end
     end
@@ -90,7 +98,7 @@ module FfcrmMailchimp
     # Clean a user off a particular list
     def clean
       unsubscribe
-      if (user_id = FfcrmMailchimp.config.user_id)
+      if (user_id = config.user_id)
         contact.comments.create!( user_id: user_id, comment: clean_reason )
         contact.update_attribute(:subscribed_users, contact.subscribed_users - [user_id]) # don't subscribe Mailchimp user to email updates
       end
