@@ -24,8 +24,8 @@ module FfcrmMailchimp
       list_id.present?
     end
 
-    def has_groupings?
-      groupings.present?
+    def has_at_least_one_group?
+      (groupings || []).select{ |grouping| grouping['groups'].any? }.flatten.compact.any?
     end
 
     #

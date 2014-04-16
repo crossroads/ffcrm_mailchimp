@@ -7,14 +7,14 @@
     = form_tag 'ffcrm_mailchimp', method: 'put' do
 
       %p
-      
+
       %br
       = check_box_tag('sync_disabled', 'true', @config.sync_disabled?)
       %label.label.top{ for: 'sync_disabled' }
         Disable sync? If checked, sync will not work in either direction.
 
       %p
-      
+
       Please enter the API key from your mailchimp account.
       %br
       .label.top.req
@@ -42,10 +42,15 @@
         Turn on verbose logging?
 
       %br
+      = check_box_tag('subgroups_only', 'true', @config.subgroups_only == true)
+      %label.label.top{ for: 'subgroups_only' }
+        Only allow subscriptions to subgroups? If checked, it will not be possible to sign up to a mailing list without selecting a subgroup.
+
+      %br
       = check_box_tag('track_phone', 'true', @config.track_phone == true)
       %label.label.top{ for: 'track_phone' }
         Track phone via the PHONE merge tag?
-      
+
       %p
         = check_box_tag('track_address', 'true', @config.track_address == true)
         %label.label.top{ for: 'track_address' }
@@ -62,7 +67,7 @@
         = check_box_tag('track_consent', 'true', @config.track_consent == true)
         %label.label.top{ for: 'track_consent' }
           Track 'Direct Marketing Consent' within Mailchimp. If enabled, sends 'Yes' or 'No' values to the CONSENT merge tag. Expects the same in return from Mailchimp.
-        
+
         %br
         -# fields = Contact.columns.select{|c| c.type == :boolean}.map(&:name)
         - fields = Contact.columns.map(&:name)

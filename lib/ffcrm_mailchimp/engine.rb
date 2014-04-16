@@ -17,6 +17,9 @@ module FfcrmMailchimp
       # When a contact is saved, ensure the mailchimp process hook is fired.
       require 'ffcrm_mailchimp/save_hook'
 
+      # If subgroup_only is checked, validate to ensure at least one subgroup has been checked.
+      require 'ffcrm_mailchimp/subgroup_validation'
+
       # Setup a webhook endpoint to receive incoming mailchimp updates
       require 'ffcrm_mailchimp/mailchimp_endpoint'
 

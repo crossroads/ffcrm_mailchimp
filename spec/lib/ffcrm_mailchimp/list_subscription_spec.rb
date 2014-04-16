@@ -25,11 +25,11 @@ describe FfcrmMailchimp::ListSubscription do
     }
   end
 
-  context "has_groupings?" do
-    it { expect( subscription.has_groupings? ).to eql(true) }
+  context "has_at_least_one_group?" do
+    it { expect( subscription.has_at_least_one_group? ).to eql(true) }
     it {
       subscription.groupings = []
-      expect( subscription.has_groupings? ).to eql(false)
+      expect( subscription.has_at_least_one_group? ).to eql(false)
     }
   end
 
