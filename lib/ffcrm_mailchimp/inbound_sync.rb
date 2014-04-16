@@ -53,6 +53,7 @@ module FfcrmMailchimp
       c.phone = data.phone if config.track_phone and !data.phone.blank? # update phone if one is provided
       c.addresses << data.address if config.track_address and data.has_address? # update address if one is provided
       c.send("#{config.consent_field_name}=", data.consent) if config.track_consent and data.consent.present? # update consent field if one is provided
+      c.tag_list = (c.tag_list << list_tag.name).join(',') if list_tag.present? # If list belongs to a field_group with a tag, ensure the tag is present on the contact so the fields are visible.
       c.save
     end
 
@@ -66,6 +67,7 @@ module FfcrmMailchimp
         contact.phone = data.phone if config.track_phone and !data.phone.blank? # update phone if one is provided
         contact.send("#{config.address_type.downcase}_address=", data.address) if config.track_address and data.has_address? # update address if one is provided
         contact.send("#{config.consent_field_name}=", data.consent) if config.track_consent and data.consent.present? # update consent field if one is provided
+        contact.tag_list = (contact.tag_list << list_tag.name).join(',') if list_tag.present? # If list belongs to a field_group with a tag, ensure the tag is present on the contact so the fields are visible.
         contact.save
       end
     end
@@ -126,6 +128,12 @@ module FfcrmMailchimp
     # If not, then we're probably not interested in this webhook.
     def list_field_exists?
       data.list_id.present? and !!custom_field
+    end
+
+    #
+    # Return the field_group tag that the list belongs to, if any
+    def list_tag
+      custom_field.field_group.tag
     end
 
     def config
