@@ -20,11 +20,18 @@ class CustomFieldMailchimpList < CustomField
   #  "groupings"=>[{"id"=>"8661", "groups"=>["Option 1"]}, {"id"=>"8669", "groups"=>["Option 5"]}]}
   # becomes "Option 1, Option 2"
   def render(value)
-    groups = []
-    groupings = (value || {})['groupings']
-    groups << (groupings || []).map{ |gp| grouping_text(gp) }
-    out = "#{list.name}"
-    out << ": #{groups.join('; ')}" if groups.any?
+    subgroups = []
+    groupings = (value || {})[:groupings]
+    subgroups << (groupings || []).map{ |gp| gp['groups'] }
+    subgroups = subgroups.flatten
+    out = "".html_safe
+    if value[:list_id].present?
+      if config.subgroups_only? and subgroups.any?
+        out << subgroups.join(', ')
+      else
+        out << "#{list.name}"
+      end
+    end
     out
   end
 
@@ -124,6 +131,10 @@ class CustomFieldMailchimpList < CustomField
 
   def group_name_from_group_id(id)
     groups.select{|g| g.id.to_s == id.to_s}.first.try(:name) || ''
+  end
+
+  def config
+    FfcrmMailchimp.config
   end
 
 end
