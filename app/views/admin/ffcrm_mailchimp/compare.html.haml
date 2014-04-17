@@ -1,0 +1,50 @@
+- @list = @compare.list
+
+.title= "Differences for list: #{@list.name} (#{@compare.list_id})"
+
+%p
+  Any contacts listed below are out of sync with the
+  = link_to(@list.name, @compare.list.url)
+  Mailchimp list.
+
+%ul
+  %li
+    Mailchimp list members: #{@compare.count_members}
+  %li
+    FFCRM members: #{@compare.count_contacts}
+
+%p
+  There are #{@compare.different.count} difference(s) detected.
+
+%table{ "border" => "1px", "cellspacing" => "0px", "cellpadding" => "5px" }
+  %thead
+    %tr
+      %td
+        %strong ID
+      %td
+        %strong Email
+      %td
+        %strong On Mailchimp
+      %td
+        %strong On FFCRM
+  %tbody
+    - @compare.different.each do |comparision|
+      %tr
+        %td
+          - if comparision.id
+            = link_to(comparision.id, contact_path(id: comparision.id))
+
+        %td
+          = comparision.contact_email || comparision.member_email
+
+        %td
+          - comparision.differences.each do |key, diff|
+            %strong= "#{key.to_s.humanize}:" unless key == :base
+            #{diff.first}
+            %br
+
+        %td
+          - comparision.differences.each do |key, diff|
+            %strong= "#{key.to_s.humanize}:" unless key == :base
+            #{diff.last}
+            %br

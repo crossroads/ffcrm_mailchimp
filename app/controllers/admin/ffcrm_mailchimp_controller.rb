@@ -1,4 +1,4 @@
-#~ require 'delayed_job'
+require 'ffcrm_mailchimp'
 
 class Admin::FfcrmMailchimpController < Admin::ApplicationController
 
@@ -9,6 +9,7 @@ class Admin::FfcrmMailchimpController < Admin::ApplicationController
   #----------------------------------------------------------------------------
   def index
     @config = FfcrmMailchimp.config
+    @lists = FfcrmMailchimp.lists
   end
 
   def update
@@ -39,6 +40,10 @@ class Admin::FfcrmMailchimpController < Admin::ApplicationController
     FfcrmMailchimp.clear_crm_mailchimp_data!
     flash[:info] = "All Mailchimp data in CRM has been cleared."
     redirect_to( action: 'index' )
+  end
+
+  def compare
+    @compare = FfcrmMailchimp.compare( params[:list_id] )
   end
 
 end

@@ -1,4 +1,5 @@
 require 'ffaker'
+require 'ffcrm_mailchimp/member'
 
 FactoryGirl.define do
 

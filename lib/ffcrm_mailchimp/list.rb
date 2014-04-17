@@ -79,6 +79,13 @@ module FfcrmMailchimp
       @headers.index( column_name )
     end
 
+    # Formats a url for the list
+    # e.g. https://us3.admin.mailchimp.com/lists/members/?id=346453
+    def url
+      region = FfcrmMailchimp.config.api_key[-3..-1] # e.g. us3
+      "https://#{region}.admin.mailchimp.com/lists/members/?id=#{web_id}"
+    end
+
     class << self
 
       # All the available lists from Mailchimp
