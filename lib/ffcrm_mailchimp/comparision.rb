@@ -45,8 +45,13 @@ module FfcrmMailchimp
       elsif member.nil?
         diff = { base: ['', 'Exists only in FFCRM'] }
       else
-        [:compare_first_name, :compare_last_name, :compare_groups].each do |meth|
-          diff.merge!( send(meth) )
+        diff.merge! compare(:first_name)
+        diff.merge! compare(:last_name)
+        diff.merge! compare(:phone)
+        diff.merge! compare_groups
+        diff.merge! compare( config.consent_field_name )
+        %w(street1 street2 city state zipcode country).each do |attr|
+          diff.merge! compare_address( attr )
         end
       end
       diff
@@ -54,17 +59,13 @@ module FfcrmMailchimp
 
     private
 
-    def compare_first_name
-      if member.first_name != contact.first_name
-        { first_name: [member.first_name, contact.first_name] }
-      else
-        {}
-      end
-    end
-
-    def compare_last_name
-      if member.last_name != contact.last_name
-        { last_name: [member.last_name, contact.last_name] }
+    # Useful for :first_name, :last_name, :phone
+    # compare(:first_name)
+    def compare(attribute)
+      mc_val = member.send(attribute)
+      ffcrm_val = contact.send(attribute)
+      if mc_val != ffcrm_val
+        { "#{attribute}".to_sym => [mc_val, ffcrm_val] }
       else
         {}
       end
@@ -78,13 +79,24 @@ module FfcrmMailchimp
       end
     end
 
+    def compare_address(attribute)
+      mc_val = member.send(attribute)
+      ffcrm_val = contact_address.try(:send, attribute)
+      ffcrm_val = country_lookup(ffcrm_val) if attribute.to_s == 'country'
+      if mc_val != ffcrm_val
+        { "#{attribute}".to_sym => [mc_val, ffcrm_val] }
+      else
+        {}
+      end
+    end
+
     def mailchimp_groups
       Set.new( member.groupings.map{ |key, value| value['groups'] }.flatten.compact )
     end
 
     def contact_groups
       subscription = FfcrmMailchimp::ListSubscription.new( contact.send(cf_mailchimp_list_name) )
-      Set.new( subscription.groupings.map{|x| x['groups']}.flatten.compact )
+      Set.new( (subscription.groupings || []).map{|x| x['groups']}.flatten.compact )
     end
 
     def list_id
@@ -101,6 +113,16 @@ module FfcrmMailchimp
 
     def config
       FfcrmMailchimp.config
+    end
+
+    def contact_address
+      address_type = FfcrmMailchimp.config.address_type
+      contact.addresses.where(address_type: address_type).first
+    end
+
+    # AU => Australia
+    def country_lookup(code)
+      Hash[ActionView::Helpers::FormOptionsHelper::COUNTRIES].invert[code]
     end
 
   end

@@ -44,10 +44,22 @@ module FfcrmMailchimp
       gibbon = Gibbon::Export.new( FfcrmMailchimp::config.api_key )
       export = gibbon.list( id: id )
 
-      email_offset       = get_offset(export, 'Email Address') # 0
-      first_name_offset  = get_offset(export, 'First Name')    # 1
-      last_name_offset   = get_offset(export, 'Last Name')     # 2
-      last_changed_offset = get_offset(export, 'LAST_CHANGED') # 17
+      # mapping of ffcrm contact attribute => Mailchimp field name
+      consent_field_name = FfcrmMailchimp::config.consent_field_name
+      # TODO: these names must map to the MERGE VARS id rather than label
+      mapping = {
+        'email' => 'Email Address',
+        'first_name' => 'First Name',
+        'last_name' => 'Last Name',
+        'phone' => 'Phone',
+        'street1' => 'Street Address 1',
+        'street2' => 'Street Address 2',
+        'city' => 'City',
+        'state' => 'State',
+        'zipcode' => 'ZIP',
+        'country' => 'Country',
+        "#{consent_field_name}" => 'Direct Marketing Consent',
+      }
 
       # Return [ ["Group 1", 3], ["Group 2", 4] ]
       groups_with_offsets = groups.map(&:name).map do |name|
@@ -57,19 +69,25 @@ module FfcrmMailchimp
 
       export.drop(1).map do |line|
         json = JSON.parse(line)
+        params = { list_id: id }
+
         # {'Group One' => "Option 1, Option 2", "Group Two" => "Option 3" }
         groups = {}
         groups_with_offsets.map do |name, offset|
           interest_groups = json[offset]
           groups.merge!( interest_groups.blank? ? {} : { name => interest_groups } ) # Ensure { "Group Two" => "" } is excluded
         end
-        FfcrmMailchimp::Member.new(
-          list_id: id,
-          email: json[email_offset],
-          first_name: json[first_name_offset],
-          last_name: json[last_name_offset],
-          subscribed_groups: groups,
-          last_changed: DateTime.parse( json[last_changed_offset] ) )
+        params.merge!( subscribed_groups: groups )
+
+        last_changed_offset = get_offset(export, 'LAST_CHANGED')
+        last_changed = DateTime.parse( json[last_changed_offset] )
+        params.merge!( last_changed: last_changed )
+
+        mapping.each do |attr, header|
+          col = get_offset(export, header)
+          params.merge!( "#{attr}" => json[col] ) unless col.nil?
+        end
+        FfcrmMailchimp::Member.new( params )
       end
     end
 

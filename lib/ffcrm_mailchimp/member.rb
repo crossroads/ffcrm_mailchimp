@@ -14,6 +14,13 @@ module FfcrmMailchimp
     # email
     # first name
     # last name
+    # phone
+    # street1
+    # street2
+    # city
+    # state
+    # zipcode
+    # country
     # list_id
     # subscribed_groups: {'Group One' => "Option 1, Option 2", "Group Two" => "Option 3" }
     # last_changed

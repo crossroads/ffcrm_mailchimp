@@ -42,20 +42,12 @@ describe FfcrmMailchimp::Comparision do
     end
   end
 
-  context "compare_first_name" do
+  context "compare(:first_name)" do
     let(:new_name) { "#{member.first_name}-TEST" }
     before { member.stub(:first_name).and_return( new_name ) }
-    subject { comparision.send(:compare_first_name) }
+    subject { comparision.send(:compare, :first_name) }
     it { expect( subject.keys ).to eql( [:first_name] ) }
     it { expect( subject.values ).to eql( [[new_name, contact.first_name]] ) }
-  end
-
-  context "compare_last_name" do
-    let(:new_name) { "#{member.last_name}-TEST" }
-    before { member.stub(:last_name).and_return( new_name ) }
-    subject { comparision.send(:compare_last_name) }
-    it { expect( subject.keys ).to eql( [:last_name] ) }
-    it { expect( subject.values ).to eql( [[new_name, contact.last_name]] ) }
   end
 
   context "compare_groups" do

@@ -10,6 +10,7 @@ FactoryGirl.define do
     list_id { '12345' }
     subscribed_groups { {'Group One' => "Option 1, Option 2", "Group Two" => "Option 3" } }
     last_changed { DateTime.now }
+    phone { Faker::PhoneNumber.phone_number }
     initialize_with { attributes }
   end
 
