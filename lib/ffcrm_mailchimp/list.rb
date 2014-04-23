@@ -2,6 +2,7 @@ require 'json'
 require 'gibbon'
 require 'ostruct'
 require 'ffcrm_mailchimp/group'
+require 'ffcrm_mailchimp/merge_vars'
 require 'ffcrm_mailchimp/webhook_params'
 
 module FfcrmMailchimp
@@ -46,26 +47,19 @@ module FfcrmMailchimp
 
       # mapping of ffcrm contact attribute => Mailchimp field name
       consent_field_name = FfcrmMailchimp::config.consent_field_name
-      # TODO: these names must map to the MERGE VARS id rather than label
-      mapping = {
-        'email' => 'Email Address',
-        'first_name' => 'First Name',
-        'last_name' => 'Last Name',
-        'phone' => 'Phone',
-        'street1' => 'Street Address 1',
-        'street2' => 'Street Address 2',
-        'city' => 'City',
-        'state' => 'State',
-        'zipcode' => 'ZIP',
-        'country' => 'Country',
-        "#{consent_field_name}" => 'Direct Marketing Consent',
-      }
+
+      # mapping of merge tag to field label (which comes in export)
+      merge_vars = FfcrmMailchimp::MergeVars.new( id )
+      attributes_to_extract = %w( email first_name last_name phone street1 street2 city state zipcode country )
 
       # Return [ ["Group 1", 3], ["Group 2", 4] ]
       groups_with_offsets = groups.map(&:name).map do |name|
         offset = get_offset(export, name)
         offset.present? ? [name, offset] : nil
       end.compact
+      last_changed_offset = get_offset(export, 'LAST_CHANGED')
+      consent_field_label = merge_vars.field_label_for( 'CONSENT' )
+      consent_offset = get_offset(export, consent_field_label)
 
       export.drop(1).map do |line|
         json = JSON.parse(line)
@@ -78,15 +72,15 @@ module FfcrmMailchimp
           groups.merge!( interest_groups.blank? ? {} : { name => interest_groups } ) # Ensure { "Group Two" => "" } is excluded
         end
         params.merge!( subscribed_groups: groups )
+        params.merge!( last_changed: DateTime.parse( json[last_changed_offset] ) ) if last_changed_offset.present?
+        params.merge!( "#{consent_field_name}".to_sym => json[consent_offset] ) if consent_offset.present?
 
-        last_changed_offset = get_offset(export, 'LAST_CHANGED')
-        last_changed = DateTime.parse( json[last_changed_offset] )
-        params.merge!( last_changed: last_changed )
-
-        mapping.each do |attr, header|
+        attributes_to_extract.each do |attr|
+          header = merge_vars.field_label_for( attr.upcase )
           col = get_offset(export, header)
           params.merge!( "#{attr}" => json[col] ) unless col.nil?
         end
+
         FfcrmMailchimp::Member.new( params )
       end
     end

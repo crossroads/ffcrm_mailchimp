@@ -74,8 +74,17 @@ module FfcrmMailchimp
       Contact.where(email: email).order(:id).first
     end
 
+    #
+    # Find all the FFCRM contacts that think they have a mailchimp subscription
+    # Candidates include those with mailchimp field != {} and not {:source => "ffcrm"} (i.e. a hash with no list_id)
     def contacts
-      @contacts ||= Contact.where( Contact.arel_table[cf_mailchimp_list_name].not_eq(nil) )
+      @contacts ||= begin
+        potentials = Contact.where( Contact.arel_table[cf_mailchimp_list_name].not_eq(nil) )
+        potentials.select do |p|
+          val = p.send(cf_mailchimp_list_name)
+          FfcrmMailchimp::ListSubscription.new(val).has_list?
+        end
+      end
     end
 
     #

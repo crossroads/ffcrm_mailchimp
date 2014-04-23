@@ -4,8 +4,8 @@ FactoryGirl.define do
     data {{ 'email' => "test@example.com",
             'merges' => {
               'EMAIL' => "test@example.com",
-              'FNAME' => "Bob",
-              'LNAME' => "Lee",
+              'FIRST_NAME' => "Bob",
+              'LAST_NAME' => "Lee",
               'INTERESTS' => "group1, group2",
               'GROUPINGS' => {
                 "0"=>

@@ -91,7 +91,7 @@ module FfcrmMailchimp
     end
 
     def mailchimp_groups
-      Set.new( member.groupings.map{ |key, value| value['groups'] }.flatten.compact )
+      Set.new( member.groups )
     end
 
     def contact_groups

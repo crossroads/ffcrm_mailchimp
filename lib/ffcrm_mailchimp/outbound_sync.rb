@@ -76,7 +76,7 @@ module FfcrmMailchimp
       new_email = @record.email
       return if new_email.blank?
       params = { id: list_id, email: { email: subscribed_email }, double_optin: false,
-                 merge_vars: { FNAME: @record.first_name, LNAME: @record.last_name, groupings: subscription.groupings } }
+                 merge_vars: { FIRST_NAME: @record.first_name, LAST_NAME: @record.last_name, groupings: subscription.groupings } }
       params[:merge_vars].merge!( extra_merge_vars )
       params[:merge_vars].merge!('new-email' => new_email) if subscribed_email != new_email
       if is_subscribed_mailchimp_user?(list_id)
@@ -147,7 +147,7 @@ module FfcrmMailchimp
         address = @record.addresses.where(address_type: address_type).first
         if address.present?
           merge_vars.merge!( 'STREET1' => address.street1, 'STREET2' => address.street2,
-                             'CITY' => address.city, 'STATE' => address.state, 'ZIP' => address.zipcode,
+                             'CITY' => address.city, 'STATE' => address.state, 'ZIPCODE' => address.zipcode,
                              'COUNTRY' => Hash[ActionView::Helpers::FormOptionsHelper::COUNTRIES].invert[address.country] )
         end
       end

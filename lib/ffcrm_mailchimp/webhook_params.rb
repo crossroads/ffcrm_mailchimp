@@ -34,11 +34,11 @@ module FfcrmMailchimp
     end
 
     def first_name
-      data['merges']['FNAME']
+      data['merges']['FIRST_NAME']
     end
 
     def last_name
-      data['merges']['LNAME']
+      data['merges']['LAST_NAME']
     end
 
     def phone
@@ -62,7 +62,7 @@ module FfcrmMailchimp
     end
 
     def zipcode
-      data['merges']['ZIP']
+      data['merges']['ZIPCODE']
     end
 
     def country
@@ -72,7 +72,7 @@ module FfcrmMailchimp
     def consent
       data['merges']['CONSENT']
     end
-    
+
     # E.g. Zambia => "ZM"
     def country_code
       Hash[ActionView::Helpers::FormOptionsHelper::COUNTRIES][country]

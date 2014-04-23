@@ -30,11 +30,11 @@ describe FfcrmMailchimp::WebhookParams do
   end
 
   context "first_name" do
-    it { expect( webhook.first_name ).to eql( webhook_data['merges']['FNAME'] ) }
+    it { expect( webhook.first_name ).to eql( webhook_data['merges']['FIRST_NAME'] ) }
   end
 
   context "last_name" do
-    it { expect( webhook.last_name ).to eql( webhook_data['merges']['LNAME'] ) }
+    it { expect( webhook.last_name ).to eql( webhook_data['merges']['LAST_NAME'] ) }
   end
 
   context "to_list_subscription" do

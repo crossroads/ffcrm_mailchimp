@@ -18,7 +18,7 @@ describe FfcrmMailchimp::InboundSync do
   let(:cf_name) { 'custom_field' } # this is hardcoded into db/schema.rb
 
   let(:data) { { email: email, new_email: new_email, old_email: old_email, list_id: list_id,
-                 merges: { EMAIL: email, FNAME: first_name, LNAME: last_name,
+                 merges: { EMAIL: email, FIRST_NAME: first_name, LAST_NAME: last_name,
                            INTERESTS: interests, GROUPINGS: groupings }
              } }
 

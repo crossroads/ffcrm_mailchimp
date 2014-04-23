@@ -126,8 +126,8 @@ describe FfcrmMailchimp::OutboundSync do
       api_call.should_receive('subscribe') do |args|
         expect( args[:id] ).to eql( list_id )
         expect( args[:email] ).to eql( {email: email} )
-        expect( args[:merge_vars][:FNAME] ).to eql( contact.first_name )
-        expect( args[:merge_vars][:LNAME] ).to eql( contact.last_name )
+        expect( args[:merge_vars][:FIRST_NAME] ).to eql( contact.first_name )
+        expect( args[:merge_vars][:LAST_NAME] ).to eql( contact.last_name )
         expect( args[:merge_vars][:groupings].first['id'] ).to eql( group_id )
         expect( args[:merge_vars][:groupings].first['groups'] ).to eql( groups )
         expect( args[:merge_vars].has_key?('new-email') ).to be_false

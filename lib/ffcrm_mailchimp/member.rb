@@ -12,8 +12,8 @@ module FfcrmMailchimp
   class Member < OpenStruct
 
     # email
-    # first name
-    # last name
+    # first_name
+    # last_name
     # phone
     # street1
     # street2
@@ -49,9 +49,17 @@ module FfcrmMailchimp
       @groupings
     end
 
+    #
+    # Returns a flattened array of all the groups
+    # Converts {'Group One' => "Option 1, Option 2", "Group Two" => "Option 3" }
+    # into ["Option 1", "Option 2", "Option 3"]
+    def groups
+      groupings.map{ |key, value| value['groups'] }.collect{|x| x.split(", ")}.flatten.compact
+    end
+
     # serialize this into a WebhookParams object so we can pass to InboundSync
     def to_webhook_params
-      merges = { 'FNAME' => first_name, 'LNAME' => last_name, 'GROUPINGS' => groupings, 'EMAIL' => email }
+      merges = { 'FIRST_NAME' => first_name, 'LAST_NAME' => last_name, 'GROUPINGS' => groupings, 'EMAIL' => email }
       data = { 'email' => email, 'merges' => merges, 'list_id' => list_id }
       FfcrmMailchimp::WebhookParams.new( 'data' => data )
     end
