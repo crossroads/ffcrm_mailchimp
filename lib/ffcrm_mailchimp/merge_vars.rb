@@ -15,7 +15,8 @@ module FfcrmMailchimp
     #
     # field_label_for('EMAIL') => 'Email address'
     def field_label_for(name)
-      merge_vars.select{ |mv| mv['tag'] == name}.first['name']
+      mv = merge_vars.select{ |mv| mv['tag'] == name}.first
+      (mv || {})['name']
     end
 
     private
