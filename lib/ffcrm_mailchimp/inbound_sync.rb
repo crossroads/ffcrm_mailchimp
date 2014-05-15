@@ -69,6 +69,8 @@ module FfcrmMailchimp
         contact.send("#{config.consent_field_name}=", data.consent) if config.track_consent and data.consent.present? # update consent field if one is provided
         contact.tag_list = (contact.tag_list << list_tag.name).join(',') if list_tag.present? # If list belongs to a field_group with a tag, ensure the tag is present on the contact so the fields are visible.
         contact.save
+      else
+        subscribe
       end
     end
 
