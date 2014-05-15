@@ -64,7 +64,7 @@ module FfcrmMailchimp
     def compare(attribute)
       mc_val = member.send(attribute)
       ffcrm_val = contact.send(attribute)
-      if mc_val != ffcrm_val
+      if mc_val.to_s != ffcrm_val.to_s
         { "#{attribute}".to_sym => [mc_val, ffcrm_val] }
       else
         {}
@@ -83,7 +83,7 @@ module FfcrmMailchimp
       mc_val = member.send(attribute)
       ffcrm_val = contact_address.try(:send, attribute)
       ffcrm_val = country_lookup(ffcrm_val) if attribute.to_s == 'country'
-      if mc_val != ffcrm_val
+      if mc_val.to_s != ffcrm_val.to_s
         { "#{attribute}".to_sym => [mc_val, ffcrm_val] }
       else
         {}
