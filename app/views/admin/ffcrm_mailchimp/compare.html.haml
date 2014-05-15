@@ -6,6 +6,10 @@
   Any contacts listed below are out of sync with the
   = link_to(@list.name, @compare.list.url)
   Mailchimp list.
+  
+%p
+  Note: address comparision is currently disabled because we were getting false positives.
+  FFCRM address comparision doesn't fallback to business or home address (which we have uploaded to Mailchimp)
 
 %ul
   %li

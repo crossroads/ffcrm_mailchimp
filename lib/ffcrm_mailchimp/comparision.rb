@@ -50,9 +50,9 @@ module FfcrmMailchimp
         diff.merge! compare(:phone)
         diff.merge! compare_groups
         diff.merge! compare( config.consent_field_name )
-        %w(street1 street2 city state zipcode country).each do |attr|
-          diff.merge! compare_address( attr )
-        end
+        #%w(street1 street2 city state zipcode country).each do |attr|
+        #  diff.merge! compare_address( attr )
+        #end
       end
       diff
     end
