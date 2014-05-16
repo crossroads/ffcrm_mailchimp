@@ -15,13 +15,13 @@
 
       - if @lists.any?
         %br
+        Click here to check if items are in sync for the following lists.
+        (Note: may take a while to export and compare objects.)
         - @lists.each do |list|
           %ul
             %li
-              = list.name
               %a{href: url_for(action: 'compare', list_id: list.id) }
-                Click here to check if items are in sync for this list
-              (Note: may take a while to export and compare objects.)
+                = "#{list.name} (#{list.member_count} members)"
 
       %p
 

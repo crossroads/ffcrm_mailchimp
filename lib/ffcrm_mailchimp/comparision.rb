@@ -8,13 +8,14 @@ module FfcrmMailchimp
   # discover any differences between them.
   class Comparision
 
-    attr_accessor :member, :contact
+    attr_accessor :member, :contact, :cf_mailchimp_list_name
     # first_name, last_name, groups
     # phone, address, consent
 
-    def initialize(member, contact)
+    def initialize(member, contact, cf_mailchimp_list_name = nil)
       @member = member
       @contact = contact
+      @cf_mailchimp_list_name = cf_mailchimp_list_name
     end
 
     def id
@@ -47,7 +48,7 @@ module FfcrmMailchimp
       else
         diff.merge! compare(:first_name)
         diff.merge! compare(:last_name)
-        diff.merge! compare(:phone)
+        #diff.merge! compare(:phone)
         diff.merge! compare_groups
         diff.merge! compare( config.consent_field_name )
         #%w(street1 street2 city state zipcode country).each do |attr|

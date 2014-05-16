@@ -9,7 +9,7 @@ class Admin::FfcrmMailchimpController < Admin::ApplicationController
   #----------------------------------------------------------------------------
   def index
     @config = FfcrmMailchimp.config
-    @lists = FfcrmMailchimp.lists
+    @lists = active_lists
   end
 
   def update
@@ -44,6 +44,18 @@ class Admin::FfcrmMailchimpController < Admin::ApplicationController
 
   def compare
     @compare = FfcrmMailchimp.compare( params[:list_id] )
+  end
+
+  private
+
+  #
+  # Returns only mailchimp lists that are used in custom fields
+  def active_lists
+    lists = []
+    FfcrmMailchimp.config.mailchimp_list_fields.each do |field|
+      lists << FfcrmMailchimp::List.find( field.list_id )
+    end
+    lists
   end
 
 end

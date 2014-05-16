@@ -46,7 +46,7 @@ module FfcrmMailchimp
     def compare_mailchimp_to_ffcrm
       members.collect do |member|
         contact = find_contact(member.email)
-        FfcrmMailchimp::Comparision.new(member, contact)
+        FfcrmMailchimp::Comparision.new(member, contact, cf_mailchimp_list_name)
       end
     end
 
@@ -55,7 +55,7 @@ module FfcrmMailchimp
     # but don't have an entry in mailchimp at all
     def compare_ffcrm_to_mailchimp
       contacts.select{ |contact| !members_by_email.keys.include?(contact.email) }.collect do |contact|
-        FfcrmMailchimp::Comparision.new(nil, contact)
+        FfcrmMailchimp::Comparision.new(nil, contact, cf_mailchimp_list_name)
       end
     end
 
@@ -71,7 +71,21 @@ module FfcrmMailchimp
     #
     # Find the contact in FFCRM
     def find_contact(email)
-      Contact.where(email: email).order(:id).first
+      #Contact.where(email: email).order(:id).first #.includes(:addresses)
+      @member_contacts ||= preload_contacts_for_members
+      @member_contacts[email]
+    end
+
+    #
+    # Does a large query to get all contact records for the member email addresses
+    # Speeds up the comparision
+    def preload_contacts_for_members
+      member_contacts = {}
+      emails = members.map{|m| m.email }
+      Contact.where(email: emails).order(:id).each do |c| #.includes(:addresses)
+        member_contacts.merge!( "#{c.email}" => c ) unless member_contacts.has_key?(c.email) # only take the first one
+      end
+      member_contacts
     end
 
     #
@@ -79,7 +93,7 @@ module FfcrmMailchimp
     # Candidates include those with mailchimp field != {} and not {:source => "ffcrm"} (i.e. a hash with no list_id)
     def contacts
       @contacts ||= begin
-        potentials = Contact.where( Contact.arel_table[cf_mailchimp_list_name].not_eq(nil) )
+        potentials = Contact.where( Contact.arel_table[cf_mailchimp_list_name].not_eq(nil) )#.includes(:addresses)
         potentials.select do |p|
           val = p.send(cf_mailchimp_list_name)
           FfcrmMailchimp::ListSubscription.new(val).has_list?
