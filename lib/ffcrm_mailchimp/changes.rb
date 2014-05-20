@@ -23,7 +23,12 @@ module FfcrmMailchimp
     #
     # Analyse the changes that have taken place and decide if we need to tell mailchimp
     def need_sychronization?
-      email_changed? or name_changed? or list_columns_changed? or phone_changed? or consent_changed?
+      # we need to disable this now because of a case when merging a contact:
+      # the slave record is deleted and the email subsequently removed from the list
+      # if the master record doesn't alter the mailing lists then need_synchronization? returns false
+      # Thus the email is removed from mailchimp and NOT re-added. CRM records it as on the list but mailchimp doesn't
+      #email_changed? or name_changed? or list_columns_changed? or phone_changed? or consent_changed?
+      true
     end
 
     # Changes to the email address on the record
@@ -47,15 +52,15 @@ module FfcrmMailchimp
     def list_columns_changed?
       @list_columns_changed.any?
     end
-    
+
     def phone_changed?
       config.track_phone and @phone_change.present?
     end
-    
+
     def consent_changed?
       config.track_consent and @consent_change.present?
     end
-    
+
     def config
       FfcrmMailchimp.config
     end
