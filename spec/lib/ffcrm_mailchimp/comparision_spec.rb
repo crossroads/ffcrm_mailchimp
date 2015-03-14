@@ -15,7 +15,7 @@ describe FfcrmMailchimp::Comparision do
 
   let(:comparision) { FfcrmMailchimp::Comparision.new(member, contact) }
 
-  before { FfcrmMailchimp::Comparision.any_instance.stub(:members).and_return(members) }
+  before { allow_any_instance_of(FfcrmMailchimp::Comparision).to receive(:members).and_return(members) }
 
   context "initialization" do
     it "list_id" do
@@ -44,7 +44,7 @@ describe FfcrmMailchimp::Comparision do
 
   context "compare(:first_name)" do
     let(:new_name) { "#{member.first_name}-TEST" }
-    before { member.stub(:first_name).and_return( new_name ) }
+    before { allow(member).to receive(:first_name).and_return( new_name ) }
     subject { comparision.send(:compare, :first_name) }
     it { expect( subject.keys ).to eql( [:first_name] ) }
     it { expect( subject.values ).to eql( [[new_name, contact.first_name]] ) }
@@ -52,8 +52,8 @@ describe FfcrmMailchimp::Comparision do
 
   context "compare_groups" do
     before {
-      comparision.stub(:mailchimp_groups).and_return( Set.new(['group1', 'group2']) )
-      comparision.stub(:contact_groups).and_return( Set.new(['group2', 'group3']) )
+      allow(comparision).to receive(:mailchimp_groups).and_return( Set.new(['group1', 'group2']) )
+      allow(comparision).to receive(:contact_groups).and_return( Set.new(['group2', 'group3']) )
     }
     subject { comparision.send(:compare_groups) }
     it { expect( subject.keys ).to eql( [:groups] ) }

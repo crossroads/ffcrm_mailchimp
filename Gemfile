@@ -7,7 +7,8 @@ gemspec
 
 # jquery-rails is used by the dummy application
 gem "jquery-rails"
-gem 'fat_free_crm', :github => 'fatfreecrm/fat_free_crm'
+gem 'fat_free_crm', github: 'fatfreecrm/fat_free_crm'
+gem 'ffcrm_endpoint', github: 'fatfreecrm/ffcrm_endpoint', branch: 'rails4'
 gem 'gibbon'
 
 # Declare any dependencies that are still in development here instead of in
@@ -15,9 +16,10 @@ gem 'gibbon'
 # Git. Remember to move these dependencies to your gemspec before releasing
 # your gem to rubygems.org.
 
-group :development do
+group :development, :test do
+  gem 'factory_girl_rails'
   unless ENV['CI']
-    gem 'debugger'
+    gem 'byebug'
     gem 'guard-rspec', require: false
   end
 end

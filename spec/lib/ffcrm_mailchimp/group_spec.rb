@@ -5,7 +5,7 @@ describe FfcrmMailchimp::Group do
   let(:group) { FfcrmMailchimp::Group.new( mailchimp_group ) }
   let(:mailchimp_group) { FactoryGirl.build(:mailchimp_group) }
 
-  before { FfcrmMailchimp::Group.stub(:groups_from_mailchimp).and_return( [mailchimp_group] ) }
+  before { allow(FfcrmMailchimp::Group).to receive(:groups_from_mailchimp).and_return( [mailchimp_group] ) }
 
   describe "initialization" do
     it { expect( group.id ).to eql( mailchimp_group[:id] ) }
@@ -21,7 +21,7 @@ describe FfcrmMailchimp::Group do
     end
 
     context "when no groups exists" do
-      before { FfcrmMailchimp::Group.stub(:groups_from_mailchimp).and_return( [] ) }
+      before { allow(FfcrmMailchimp::Group).to receive(:groups_from_mailchimp).and_return( [] ) }
       it { expect( FfcrmMailchimp::Group.groups_for('1234') ).to eql( [] ) }
     end
 

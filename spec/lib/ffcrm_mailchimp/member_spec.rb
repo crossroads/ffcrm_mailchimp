@@ -15,8 +15,8 @@ describe FfcrmMailchimp::Member do
     let(:member)        { FfcrmMailchimp::Member.new(member_params) }
 
     before {
-      member.stub(:find_group_by_name).with('Group One').and_return( double(id: 1111) )
-      member.stub(:find_group_by_name).with('Group Two').and_return( double(id: 2222) )
+      expect(member).to receive(:find_group_by_name).with('Group One').and_return( double(id: 1111) )
+      expect(member).to receive(:find_group_by_name).with('Group Two').and_return( double(id: 2222) )
     }
 
     subject { member.groupings }
@@ -36,8 +36,8 @@ describe FfcrmMailchimp::Member do
     let(:member)        { FfcrmMailchimp::Member.new(member_params) }
 
     before {
-      member.stub(:find_group_by_name).with('Group One').and_return( double(id: 1111) )
-      member.stub(:find_group_by_name).with('Group Two').and_return( double(id: 2222) )
+      expect(member).to receive(:find_group_by_name).with('Group One').and_return( double(id: 1111) )
+      expect(member).to receive(:find_group_by_name).with('Group Two').and_return( double(id: 2222) )
     }
 
     subject { member.to_webhook_params }

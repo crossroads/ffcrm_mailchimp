@@ -88,10 +88,8 @@ class CustomFieldMailchimpList < CustomField
     return if klass_name.blank?
     klass = klass_name.constantize
 
-    if !klass.serialized_attributes.keys.include?(self.name)
-      klass.serialize(self.name.to_sym, Hash)
-      Rails.logger.debug("FfcrmMailchimp: Serializing #{self.name} as Hash for #{klass}.")
-    end
+    klass.serialize(self.name.to_sym, Hash)
+    Rails.logger.debug("FfcrmMailchimp: Serializing #{self.name} as Hash for #{klass}.")
 
     #
     # We store the list and group data as an Array on the custom field

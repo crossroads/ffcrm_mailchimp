@@ -16,7 +16,7 @@ describe FfcrmMailchimp::Compare do
 
   let(:compare) { FfcrmMailchimp::Compare.new(list_id) }
 
-  before { FfcrmMailchimp::Compare.any_instance.stub(:members).and_return(members) }
+  before { allow_any_instance_of(FfcrmMailchimp::Compare).to receive(:members).and_return(members) }
 
   context "initialization" do
     it "list_id" do
@@ -43,10 +43,10 @@ describe FfcrmMailchimp::Compare do
   context "different" do
     before do
       cmp1 = FfcrmMailchimp::Comparision.new(member, contact)
-      cmp1.stub(:different?).and_return(true)
+      allow(cmp1).to receive(:different?).and_return(true)
       cmp2 = FfcrmMailchimp::Comparision.new(member, contact)
-      cmp2.stub(:different?).and_return(false)
-      compare.stub(:compare).and_return( [cmp1, cmp2] )
+      allow(cmp2).to receive(:different?).and_return(false)
+      allow(compare).to receive(:compare).and_return( [cmp1, cmp2] )
     end
     subject { compare.different }
     it { expect( subject.count ).to be( 1 ) }

@@ -2,9 +2,9 @@ require 'spec_helper'
 
 describe FfcrmMailchimp::List do
 
-  let(:lists) { FactoryGirl.build_list(:list, 2) }
+  let(:lists) { FactoryGirl.build_list(:mailchimp_list, 2) }
 
-  before { FfcrmMailchimp::List.stub(:lists_from_mailchimp).and_return( {"data" => lists} ) }
+  before { allow(FfcrmMailchimp::List).to receive(:lists_from_mailchimp).and_return( {"data" => lists} ) }
 
   context "when initialized" do
     let(:list) { FfcrmMailchimp::List.new( id: '123', name: 'test') }
@@ -36,8 +36,8 @@ describe FfcrmMailchimp::List do
     it "should return list for the given id" do
       id = lists.first[:id]
       list_by_id = FfcrmMailchimp::List.find( id )
-      list_by_id.should be_kind_of FfcrmMailchimp::List
-      list_by_id.name.should_not be_blank
+      expect(list_by_id).to be_kind_of(FfcrmMailchimp::List)
+      expect(list_by_id.name).not_to be_blank
     end
   end
 
@@ -49,13 +49,19 @@ describe FfcrmMailchimp::List do
     let(:group1) { double( name: 'Group One' ) }
     let(:group2) { double( name: 'Group Two' ) }
     let(:groups) { [group1, group2] }
-    let(:merge_vars) { double(FfcrmMailchimp::MergeVars).tap{|d| d.stub(:field_label_for){|args| args.upcase} } }
+    let(:merge_vars) { double(FfcrmMailchimp::MergeVars) }
+
+    before do
+      allow(merge_vars).to receive(:field_label_for) do |args|
+        args.upcase
+      end
+    end
 
     it "should create a new member" do
-      Gibbon::Export.stub(:new).and_return( gibbon )
+      expect(Gibbon::Export).to receive(:new).and_return( gibbon )
       list = FfcrmMailchimp::List.new( id: '12345' )
-      list.stub(:groups).and_return( groups )
-      FfcrmMailchimp::MergeVars.stub(:new).and_return( merge_vars )
+      expect(list).to receive(:groups).and_return( groups )
+      expect(FfcrmMailchimp::MergeVars).to receive(:new).and_return( merge_vars )
       member = list.members.first
       expect( member.email ).to eql( 'test@example.com' )
       expect( member.first_name ).to eql( 'Test' )

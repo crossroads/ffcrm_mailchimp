@@ -9,17 +9,17 @@ describe FfcrmMailchimp::MailchimpEndpoint do
   describe "authenticate" do
 
     context "with correct api_key" do
-      before { FfcrmMailchimp.stub(:config).and_return( double(api_key: api_key) ) }
+      before { expect(FfcrmMailchimp).to receive(:config).and_return( double(api_key: api_key) ) }
       it { expect( mc_endpoint.authenticate ).to eql(true) }
     end
 
     context "with invalid api_key" do
-      before { FfcrmMailchimp.stub(:config).and_return( double(api_key: "qwerty") ) }
+      before { expect(FfcrmMailchimp).to receive(:config).and_return( double(api_key: "qwerty") ) }
       it { expect( mc_endpoint.authenticate ).to eql(false) }
     end
 
     context "with blank api_key" do
-      before { FfcrmMailchimp.stub(:config).and_return( double(api_key: "") ) }
+      before { expect(FfcrmMailchimp).to receive(:config).and_return( double(api_key: "") ) }
       it { expect( mc_endpoint.authenticate ).to eql(false) }
     end
 
@@ -33,7 +33,7 @@ describe FfcrmMailchimp::MailchimpEndpoint do
 
     context "with valid user" do
       before {
-        FfcrmMailchimp.stub(:config).and_return( double(user_id: user.id) )
+        expect(FfcrmMailchimp).to receive(:config).and_return( double(user_id: user.id) )
         mc_endpoint.send(:set_paper_trail_user)
       }
       it { expect( PaperTrail.whodunnit ).to eql( user.id ) }
@@ -41,7 +41,7 @@ describe FfcrmMailchimp::MailchimpEndpoint do
 
     context "when user not found" do
       before {
-        FfcrmMailchimp.stub(:config).and_return( double(user_id: user.id + 1) )
+        expect(FfcrmMailchimp).to receive(:config).and_return( double(user_id: user.id + 1) )
         mc_endpoint.send(:set_paper_trail_user)
        }
       it { expect( PaperTrail.whodunnit ).to eql( nil ) }
@@ -49,7 +49,7 @@ describe FfcrmMailchimp::MailchimpEndpoint do
 
     context "when user_id not set" do
       before {
-        FfcrmMailchimp.stub(:config).and_return( double(user_id: nil) )
+        expect(FfcrmMailchimp).to receive(:config).and_return( double(user_id: nil) )
         mc_endpoint.send(:set_paper_trail_user)
        }
       it { expect( PaperTrail.whodunnit ).to eql( nil ) }
@@ -61,8 +61,8 @@ describe FfcrmMailchimp::MailchimpEndpoint do
 
     context "when request is from iron_mq" do
       before {
-        FfcrmMailchimp.stub(:config).and_return( double(iron_mq: "true") )
-        mc_endpoint.stub_chain('request.body.read').and_return( "123456" )
+        expect(FfcrmMailchimp).to receive(:config).and_return( double(iron_mq: "true") )
+        expect(mc_endpoint).to receive_message_chain(:request, :body, :read).and_return( "123456" )
       }
       it { expect( mc_endpoint.send(:data) ).to eql( CGI::parse("123456") ) }
     end

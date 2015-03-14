@@ -23,11 +23,11 @@ describe FfcrmMailchimp::OutboundSync do
 
     context "when subscribing a contact to the mailchimp list" do
       before do
-        sync.stub(:subscribed_email).and_return(email)
-        sync.stub(:mailchimp_list_field_names).and_return( ['custom_field'] )
-        sync.stub(:list_id_from_column).and_return( list_id )
-        subscription.stub(:wants_to_subscribe?).and_return(true)
-        FfcrmMailchimp::ListSubscription.stub(:new).and_return(subscription)
+        allow(sync).to receive(:subscribed_email).and_return(email)
+        expect(sync).to receive(:mailchimp_list_field_names).and_return( ['custom_field'] )
+        expect(sync).to receive(:list_id_from_column).and_return( list_id )
+        expect(subscription).to receive(:wants_to_subscribe?).and_return(true)
+        expect(FfcrmMailchimp::ListSubscription).to receive(:new).and_return(subscription)
       end
       it {
         expect(sync).to receive(:apply_mailchimp_subscription).with(subscription, list_id)
@@ -37,11 +37,11 @@ describe FfcrmMailchimp::OutboundSync do
 
     context "when unsubscribing a contact from the mailchimp list" do
       before {
-        sync.stub(:subscribed_email).and_return(email)
-        sync.stub(:mailchimp_list_field_names).and_return( ['custom_field'] )
-        subscription.stub(:wants_to_subscribe?).and_return(false)
-        FfcrmMailchimp::ListSubscription.stub(:new).and_return(subscription)
-        sync.stub(:list_id_from_column).with('custom_field').and_return(list_id)
+        allow(sync).to receive(:subscribed_email).and_return(email)
+        allow(sync).to receive(:mailchimp_list_field_names).and_return( ['custom_field'] )
+        allow(subscription).to receive(:wants_to_subscribe?).and_return(false)
+        allow(FfcrmMailchimp::ListSubscription).to receive(:new).and_return(subscription)
+        allow(sync).to receive(:list_id_from_column).with('custom_field').and_return(list_id)
       }
       it {
         expect(sync).to receive(:unsubscribe_from_mailchimp_list).with(list_id)
@@ -51,8 +51,8 @@ describe FfcrmMailchimp::OutboundSync do
 
     context "when no changes have been detected" do
       before {
-        sync.stub(:subscribed_email).and_return(email)
-        sync.stub(:mailchimp_list_field_names).and_return( [] )
+        allow(sync).to receive(:subscribed_email).and_return(email)
+        allow(sync).to receive(:mailchimp_list_field_names).and_return( [] )
       }
       it {
         expect(sync).to_not receive(:unsubscribe_from_mailchimp_list)
@@ -67,17 +67,15 @@ describe FfcrmMailchimp::OutboundSync do
 
     context "when subscribed_email is present" do
       it "should unsubscribe the user from the mailchimp list" do
-        sync.stub(:subscribed_email).and_return(email)
-        sync.stub(:ffcrm_list_ids).and_return([list_id])
-        sync.should_receive(:unsubscribe_from_mailchimp_list).with(list_id, email)
+        expect(sync).to receive(:ffcrm_list_ids).and_return([list_id])
+        expect(sync).to receive(:unsubscribe_from_mailchimp_list).with(list_id, email)
         sync.unsubscribe(email)
       end
     end
 
     context "when subscribed_email is blank" do
       it "should not unsubscribe the user from the mailchimp list" do
-        sync.stub(:subscribed_email).and_return(nil)
-        sync.should_not_receive(:unsubscribe_from_mailchimp_list)
+        expect(sync).not_to receive(:unsubscribe_from_mailchimp_list)
         sync.unsubscribe('')
       end
     end
@@ -86,27 +84,27 @@ describe FfcrmMailchimp::OutboundSync do
 
   describe ".is_subscribed_mailchimp_user?" do
 
-    before { sync.stub(:subscribed_email).and_return(email) }
+    before { allow(sync).to receive(:subscribed_email).and_return(email) }
 
     context "when subscribed_email present" do
 
       context "when user is subscribed" do
         before {
-          Gibbon::API.any_instance.stub_chain('lists.member_info').and_return( {"error_count" => 0, "data" => [{ "status" => 'subscribed'}] })
+          expect_any_instance_of(Gibbon::API).to receive_message_chain(:lists, :member_info).and_return({"error_count" => 0, "data" => [{ "status" => 'subscribed'}] })
         }
         it { expect( sync.send(:is_subscribed_mailchimp_user?, '1234') ).to eql(true) }
       end
 
       context "when user is not subscribed" do
         before {
-          Gibbon::API.any_instance.stub_chain('lists.member_info').and_return({ "error_count" => 1 })
+          expect_any_instance_of(Gibbon::API).to receive_message_chain(:lists, :member_info).and_return({ "error_count" => 1 })
         }
         it { expect( sync.send(:is_subscribed_mailchimp_user?, '1234') ).to eql(false) }
       end
 
       context "when user is not subscribed but was previously" do
         before {
-          Gibbon::API.any_instance.stub_chain('lists.member_info').and_return({"error_count" => 0, "data" => [{ "status" => 'unsubscribed'}]})
+          expect_any_instance_of(Gibbon::API).to receive_message_chain('lists.member_info').and_return({"error_count" => 0, "data" => [{ "status" => 'unsubscribed'}]})
         }
         it { expect( sync.send(:is_subscribed_mailchimp_user?, '1234') ).to eql(false) }
       end
@@ -118,30 +116,30 @@ describe FfcrmMailchimp::OutboundSync do
   describe "apply_mailchimp_subscription" do
 
     let(:api_call) { double }
-    before { sync.stub(:subscribed_email).and_return(email) }
+    before { allow(sync).to receive(:subscribed_email).and_return(email) }
 
     it "should subscribe user to mailchimp list with particular interest groups" do
-      sync.stub(:is_subscribed_mailchimp_user?).with(list_id).and_return(false)
-      Gibbon::API.any_instance.stub_chain('lists').and_return(api_call)
-      api_call.should_receive('subscribe') do |args|
+      expect(sync).to receive(:is_subscribed_mailchimp_user?).with(list_id).and_return(false)
+      expect_any_instance_of(Gibbon::API).to receive('lists').and_return(api_call)
+      expect(api_call).to receive('subscribe') do |args|
         expect( args[:id] ).to eql( list_id )
         expect( args[:email] ).to eql( {email: email} )
         expect( args[:merge_vars][:FIRST_NAME] ).to eql( contact.first_name )
         expect( args[:merge_vars][:LAST_NAME] ).to eql( contact.last_name )
         expect( args[:merge_vars][:groupings].first['id'] ).to eql( group_id )
         expect( args[:merge_vars][:groupings].first['groups'] ).to eql( groups )
-        expect( args[:merge_vars].has_key?('new-email') ).to be_false
+        expect( args[:merge_vars].has_key?('new-email') ).to eql(false)
         expect( args[:double_optin] ).to eql( false )
       end
       sync.send(:apply_mailchimp_subscription, subscription, list_id)
     end
 
     it "should update user subscription if user is already subscribed to the list" do
-      sync.stub(:is_subscribed_mailchimp_user?).with(list_id).and_return(true)
-      Gibbon::API.any_instance.stub_chain('lists').and_return(api_call)
-      api_call.should_receive('subscribe') do |args|
+      expect(sync).to receive(:is_subscribed_mailchimp_user?).with(list_id).and_return(true)
+      expect_any_instance_of(Gibbon::API).to receive('lists').and_return(api_call)
+      expect(api_call).to receive('subscribe') do |args|
         expect( args[:update_existing] ).to eql( "true" )
-        expect( args[:merge_vars].has_key?('new-email') ).to be_false
+        expect( args[:merge_vars].has_key?('new-email') ).to eql(false)
       end
       sync.send(:apply_mailchimp_subscription, subscription, list_id)
     end
@@ -149,9 +147,9 @@ describe FfcrmMailchimp::OutboundSync do
     it "should update email of subscription if contact email is updated" do
       new_email = "test-#{contact.email}"
       contact.email = new_email
-      sync.stub(:is_subscribed_mailchimp_user?).with(list_id).and_return(true)
-      Gibbon::API.any_instance.stub_chain('lists').and_return(api_call)
-      api_call.should_receive('subscribe') do |args|
+      expect(sync).to receive(:is_subscribed_mailchimp_user?).with(list_id).and_return(true)
+      expect_any_instance_of(Gibbon::API).to receive('lists').and_return(api_call)
+      expect(api_call).to receive('subscribe') do |args|
         expect( args[:update_existing] ).to eql( "true" )
         expect( args[:merge_vars]['new-email'] ).to eql( new_email )
       end
@@ -159,9 +157,9 @@ describe FfcrmMailchimp::OutboundSync do
     end
 
     it "should do nothing if new_email is blank but subscribed_email is not" do
-      contact.stub(:email).and_return(nil)
-      Gibbon::API.any_instance.stub_chain('lists').and_return(api_call)
-      api_call.should_not_receive('subscribe')
+      expect(contact).to receive(:email).and_return(nil)
+      allow_any_instance_of(Gibbon::API).to receive('lists').and_return(api_call)
+      expect(api_call).not_to receive('subscribe')
       sync.send(:apply_mailchimp_subscription, subscription, list_id)
     end
 
@@ -169,12 +167,12 @@ describe FfcrmMailchimp::OutboundSync do
 
   describe "unsubscribe_from_mailchimp_list" do
 
-    before { sync.stub(:subscribed_email).and_return(email) }
+    before { allow(sync).to receive(:subscribed_email).and_return(email) }
 
     it "should unsubscribe existing contact from mailchimp list" do
-      sync.stub(:is_subscribed_mailchimp_user?).with(list_id, email).and_return(true)
-      Gibbon::API.any_instance.stub_chain('lists').and_return(mock_api_call)
-      mock_api_call.should_receive('unsubscribe') do |args|
+      expect(sync).to receive(:is_subscribed_mailchimp_user?).with(list_id, email).and_return(true)
+      expect_any_instance_of(Gibbon::API).to receive('lists').and_return(mock_api_call)
+      expect(mock_api_call).to receive('unsubscribe') do |args|
         expect( args[:id] ).to eql( list_id )
         expect( args[:email][:email] ).to eql( email )
         expect( args[:email][:delete_member] ).to eql( true )
@@ -184,9 +182,9 @@ describe FfcrmMailchimp::OutboundSync do
     end
 
     it "should not unsubscribe a contact that isn't subscribed" do
-      sync.stub(:is_subscribed_mailchimp_user?).with(list_id, email).and_return(false)
-      Gibbon::API.any_instance.stub_chain('lists').and_return(mock_api_call)
-      mock_api_call.should_not_receive('unsubscribe')
+      expect(sync).to receive(:is_subscribed_mailchimp_user?).with(list_id, email).and_return(false)
+      allow_any_instance_of(Gibbon::API).to receive('lists').and_return(mock_api_call)
+      expect(mock_api_call).not_to receive('unsubscribe')
       sync.send(:unsubscribe_from_mailchimp_list, list_id)
     end
 
