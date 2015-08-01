@@ -54,7 +54,7 @@ PATH
       delayed_job_active_record
       fat_free_crm
       ffcrm_endpoint
-      gibbon
+      gibbon (~> 1)
       rails
 
 GEM
@@ -336,7 +336,7 @@ DEPENDENCIES
   ffaker
   ffcrm_endpoint!
   ffcrm_mailchimp!
-  gibbon (~> 1)
+  gibbon
   guard-rspec
   jquery-rails
   pg
