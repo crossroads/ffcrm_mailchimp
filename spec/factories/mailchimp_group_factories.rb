@@ -14,7 +14,7 @@ FactoryGirl.define do
 
   factory :mailchimp_group, class: OpenStruct do
     id              { rand(1000) }
-    name            { Faker::Name.first_name }
+    name            { FFaker::Name.first_name }
     list_id         { rand(1000) }
     form_field      { 'checkboxes' }
     display_order   { rand(100) }
@@ -24,9 +24,9 @@ FactoryGirl.define do
 
   factory :interest_grouping, class: Hash do
     bit             { rand(100) }
-    name            { Faker::Lorem.sentence(1) }
+    name            { FFaker::Lorem.sentence(1) }
     display_order   { rand(100) }
-    subscribers     { Faker::Name.first_name }
+    subscribers     { FFaker::Name.first_name }
     initialize_with { attributes }
   end
 
