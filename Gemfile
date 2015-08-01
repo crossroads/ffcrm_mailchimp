@@ -17,7 +17,7 @@ gem 'gibbon'
 
 group :development do
   unless ENV['CI']
-    gem 'debugger'
+    gem 'byebug'
     gem 'guard-rspec', require: false
   end
 end
