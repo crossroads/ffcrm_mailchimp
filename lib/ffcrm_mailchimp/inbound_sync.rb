@@ -102,7 +102,7 @@ module FfcrmMailchimp
     # Clean a user off a particular list
     def clean
       unsubscribe
-      if (user_id = config.user_id)
+      if (user_id = config.user_id) and contact.present?
         contact.comments.create!( user_id: user_id, comment: clean_reason )
         contact.update_attribute(:subscribed_users, contact.subscribed_users - [user_id]) # don't subscribe Mailchimp user to email updates
       end
