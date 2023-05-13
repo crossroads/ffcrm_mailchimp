@@ -32,11 +32,6 @@
         It is recommended you create a Fat Free CRM user purely for this purpose.
 
       %br
-      = check_box_tag('iron_mq', 'true', !@config.iron_mq.nil?)
-      %label.label.top{ for: 'iron_mq' }
-        Use Iron MQ for inbound requests?
-
-      %br
       = check_box_tag('verbose', 'true', @config.verbose == true)
       %label.label.top{ for: 'verbose' }
         Turn on verbose logging?

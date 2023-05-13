@@ -27,14 +27,8 @@ class FfcrmMailchimp::MailchimpEndpoint < FfcrmEndpoint::Endpoint
     PaperTrail.whodunnit = user_id if defined?(PaperTrail) and user_id.present? and User.where(id: user_id).any?
   end
 
-  #
-  # Parse an IronMQ request, if desired
   def data
-    if FfcrmMailchimp.config.iron_mq.nil?
-      params
-    else
-      CGI::parse(request.body.read)
-    end
+    params
   end
 
 end
