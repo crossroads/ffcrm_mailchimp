@@ -13,16 +13,6 @@
       %label.label.top{ for: 'sync_disabled' }
         Disable sync? If checked, sync will not work in either direction.
 
-      - if @lists.any?
-        %br
-        Click here to check if items are in sync for the following lists.
-        (Note: may take a while to export and compare objects.)
-        - @lists.each do |list|
-          %ul
-            %li
-              %a{href: url_for(action: 'compare', list_id: list.id) }
-                = "#{list.name} (#{list.member_count} members)"
-
       %p
 
       Please enter the API key from your mailchimp account.

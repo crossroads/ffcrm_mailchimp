@@ -1,5 +1,4 @@
 require "ffcrm_mailchimp/config"
-require "ffcrm_mailchimp/compare"
 require "ffcrm_mailchimp/engine"
 require "ffcrm_mailchimp/list"
 require "ffcrm_mailchimp/refresh"
@@ -34,10 +33,6 @@ module FfcrmMailchimp
       if config.verbose
         Rails.logger.info("FfcrmMailchimp: #{message}")
       end
-    end
-
-    def compare(list_id)
-      FfcrmMailchimp::Compare.new(list_id)
     end
 
     def lists

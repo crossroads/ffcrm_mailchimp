@@ -42,10 +42,6 @@ class Admin::FfcrmMailchimpController < Admin::ApplicationController
     redirect_to( action: 'index' )
   end
 
-  def compare
-    @compare = FfcrmMailchimp.compare( params[:list_id] )
-  end
-
   private
 
   #
