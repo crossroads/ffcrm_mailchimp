@@ -122,3 +122,17 @@ When you use FFCRM to subscribe someone to a MailChimp list, the person will not
 * Resolve the case where there are two contacts in FFCRM with the same email address - form should not pass validation if a mailchimp list is checked and there is a duplicate email address. This seems like the best compromise as it allows you to have contacts with duplicate emails in FFCRM but NOT if that affects MailChimp.
 * When FFCRM creates a new contact via the InboundSync, if the Mailchimp List custom field is in a Field Group with a Tag, the tag is not added to the contact and the fields are not visible in FFCRM until it is added.
 * Table view showing if sync is out of date - say if there are emails subscribed in FFCRM but not mailchimp. (For sanity checking)
+
+## Development
+
+```
+rvm install ruby-2.0.0-p648
+gem install bundler -v 1.7.3
+bundle install
+# edit spec/dummy/config/database.yml
+rake db:create
+rake db:schema:load
+RAILS_ENV=test rake db:create
+RAILS_ENV=test rake db:schema:load
+rake spec
+```
