@@ -19,12 +19,14 @@ Gem::Specification.new do |s|
   s.add_dependency "rails", "~> 3.2.11"
   s.add_dependency "fat_free_crm"
   s.add_dependency "ffcrm_endpoint"
-  s.add_dependency "gibbon", "~>1"
+  s.add_dependency "gibbon", "<3"
+  s.add_dependency "faraday", "~>0.9.1" # for gibbon 2.1 / ruby 2.0.0
+  s.add_dependency "multipart-post", "~>1.2" # for faraday 0.9 / gibbon 2.1 / ruby 2.0.0
   s.add_dependency "delayed_job_active_record"
   s.add_development_dependency "pg"
   s.add_development_dependency 'rspec-rails'
   s.add_development_dependency 'factory_girl_rails'
   s.add_development_dependency 'ffaker'
-  s.add_development_dependency 'haml', '~>3'
-  s.add_development_dependency 'sass', '~>3.3.3'
+  s.add_development_dependency 'haml', '~>3' # fat_free_crm 0.13.6
+  s.add_development_dependency 'sass', '~>3.3.3' # fat_free_crm 0.13.6
 end

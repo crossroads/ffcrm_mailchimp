@@ -90,7 +90,7 @@ class CustomFieldMailchimpList < CustomField
 
     if !klass.serialized_attributes.keys.include?(self.name)
       klass.serialize(self.name.to_sym, Hash)
-      Rails.logger.debug("FfcrmMailchimp: Serializing #{self.name} as Hash for #{klass}.")
+      Rails.logger.debug("#{Time.now.to_s(:db)} FfcrmMailchimp: Serializing #{self.name} as Hash for #{klass}.")
     end
 
     #

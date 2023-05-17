@@ -29,9 +29,10 @@ module FfcrmMailchimp
       FfcrmMailchimp::Refresh.clear_crm_mailchimp_data!
     end
 
-    def logger(message)
-      if config.verbose
-        Rails.logger.info("FfcrmMailchimp: #{message}")
+    def logger
+      @logger ||= begin
+        level = config.verbose ? Logger::INFO : Logger::ERROR
+        Logger.new(File.join(Rails.root, 'log', 'ffcrm_mailchimp.log'), level: level)
       end
     end
 

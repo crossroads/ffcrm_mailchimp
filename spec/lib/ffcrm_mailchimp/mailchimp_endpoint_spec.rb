@@ -1,25 +1,25 @@
 require 'spec_helper'
 describe FfcrmMailchimp::MailchimpEndpoint do
 
-  let(:api_key)     { "1f443fda6e6fab633b8509asdsdhga34234-us3" }
-  let(:params)      { FactoryGirl.build(:mc_webhook, api_key: api_key) }
+  let(:webhook_key) { "akwdjffdke" }
+  let(:params)      { FactoryGirl.build(:mc_webhook, webhook_key: webhook_key).with_indifferent_access }
   let(:request)     { double(params: params) }
   let(:mc_endpoint) { FfcrmMailchimp::MailchimpEndpoint.new(request) }
 
   describe "authenticate" do
 
-    context "with correct api_key" do
-      before { FfcrmMailchimp.stub(:config).and_return( double(api_key: api_key) ) }
+    context "with correct webhook_key" do
+      before { allow_any_instance_of(FfcrmMailchimp::Config).to receive(:webhook_key).and_return(webhook_key) }
       it { expect( mc_endpoint.authenticate ).to eql(true) }
     end
 
-    context "with invalid api_key" do
-      before { FfcrmMailchimp.stub(:config).and_return( double(api_key: "qwerty") ) }
+    context "with invalid webhook_key" do
+      before { allow_any_instance_of(FfcrmMailchimp::Config).to receive(:webhook_key).and_return('qwerty') }
       it { expect( mc_endpoint.authenticate ).to eql(false) }
     end
 
-    context "with blank api_key" do
-      before { FfcrmMailchimp.stub(:config).and_return( double(api_key: "") ) }
+    context "with blank webhook_key" do
+      before { allow_any_instance_of(FfcrmMailchimp::Config).to receive(:webhook_key).and_return('') }
       it { expect( mc_endpoint.authenticate ).to eql(false) }
     end
 

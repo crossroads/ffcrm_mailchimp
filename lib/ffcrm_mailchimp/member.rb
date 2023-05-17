@@ -1,5 +1,4 @@
 require 'ostruct'
-require 'gibbon'
 require 'json'
 require 'ffcrm_mailchimp/config'
 require 'ffcrm_mailchimp/list'

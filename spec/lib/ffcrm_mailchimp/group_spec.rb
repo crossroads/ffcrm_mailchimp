@@ -4,8 +4,11 @@ describe FfcrmMailchimp::Group do
 
   let(:group) { FfcrmMailchimp::Group.new( mailchimp_group ) }
   let(:mailchimp_group) { FactoryGirl.build(:mailchimp_group) }
+  let(:list_id) { '1234' }
 
-  before { FfcrmMailchimp::Group.stub(:groups_from_mailchimp).and_return( [mailchimp_group] ) }
+  before do 
+    FfcrmMailchimp::Api.stub(:interest_groupings).with(list_id).and_return([mailchimp_group])
+  end
 
   describe "initialization" do
     it { expect( group.id ).to eql( mailchimp_group[:id] ) }
@@ -17,12 +20,12 @@ describe FfcrmMailchimp::Group do
   describe ".groups_for" do
 
     context "when mailchimp groups exist" do
-      it { expect( FfcrmMailchimp::Group.groups_for('1234').first.id ).to eql( mailchimp_group[:id] ) }
+      it { expect( FfcrmMailchimp::Group.groups_for(list_id).first.id ).to eql( mailchimp_group[:id] ) }
     end
 
     context "when no groups exists" do
-      before { FfcrmMailchimp::Group.stub(:groups_from_mailchimp).and_return( [] ) }
-      it { expect( FfcrmMailchimp::Group.groups_for('1234') ).to eql( [] ) }
+      before { FfcrmMailchimp::Api.stub(:interest_groupings).with(list_id).and_return([]) }
+      it { expect( FfcrmMailchimp::Group.groups_for(list_id) ).to eql( [] ) }
     end
 
   end

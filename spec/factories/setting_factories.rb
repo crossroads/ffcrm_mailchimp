@@ -7,7 +7,7 @@ FactoryGirl.define do
 
     factory :ffcrm_mailchimp do
       name "ffcrm_mailchimp"
-      value {{api_key:"1f443fda6e6fab633b8509asdsdhga34234-us3"}}
+      value {{webhook_key:"aswkgjfikdl"}}
     end
   end
 end

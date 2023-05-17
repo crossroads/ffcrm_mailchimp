@@ -4,7 +4,7 @@ describe FfcrmMailchimp::List do
 
   let(:lists) { FactoryGirl.build_list(:list, 2) }
 
-  before { FfcrmMailchimp::List.stub(:lists_from_mailchimp).and_return( {"data" => lists} ) }
+  before { FfcrmMailchimp::Api.stub(:all_lists).and_return( lists ) }
 
   context "when initialized" do
     let(:list) { FfcrmMailchimp::List.new( id: '123', name: 'test') }
@@ -39,32 +39,6 @@ describe FfcrmMailchimp::List do
       list_by_id.should be_kind_of FfcrmMailchimp::List
       list_by_id.name.should_not be_blank
     end
-  end
-
-  describe "members" do
-
-    let(:gibbon)    { double( list: raw_array ) }
-    let(:raw_array) { ["[\"EMAIL\",\"FIRST_NAME\",\"LAST_NAME\",\"Group One\",\"Group Two\",\"MEMBER_RATING\",\"OPTIN_TIME\",\"OPTIN_IP\",\"CONFIRM_TIME\",\"CONFIRM_IP\",\"LATITUDE\",\"LONGITUDE\",\"GMTOFF\",\"DSTOFF\",\"TIMEZONE\",\"CC\",\"REGION\",\"LAST_CHANGED\",\"LEID\",\"EUID\"]\n",
- "[\"test@example.com\",\"Test\",\"Name\",\"Option 1, Option 2\",\"\",2,\"\",null,\"2014-02-20 08:23:53\",\"127.0.0.1\",null,null,null,null,null,null,null,\"2014-02-22 04:36:00\",\"135560097\",\"9d79ad51bb\"]\n"] }
-    let(:group1) { double( name: 'Group One' ) }
-    let(:group2) { double( name: 'Group Two' ) }
-    let(:groups) { [group1, group2] }
-    let(:merge_vars) { double(FfcrmMailchimp::MergeVars).tap{|d| d.stub(:field_label_for){|args| args.upcase} } }
-
-    it "should create a new member" do
-      Gibbon::Export.stub(:new).and_return( gibbon )
-      list = FfcrmMailchimp::List.new( id: '12345' )
-      list.stub(:groups).and_return( groups )
-      FfcrmMailchimp::MergeVars.stub(:new).and_return( merge_vars )
-      member = list.members.first
-      expect( member.email ).to eql( 'test@example.com' )
-      expect( member.first_name ).to eql( 'Test' )
-      expect( member.last_name ).to eql( 'Name' )
-      expect( member.list_id ).to eql( '12345' )
-      expect( member.last_changed ).to eql( DateTime.parse('2014-02-22 04:36:00') )
-      expect( member.subscribed_groups ).to eql( {'Group One' => "Option 1, Option 2" } )
-    end
-
   end
 
   describe ".group" do

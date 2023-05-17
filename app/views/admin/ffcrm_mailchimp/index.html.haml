@@ -14,12 +14,19 @@
         Disable sync? If checked, sync will not work in either direction.
 
       %p
+      %br
+      - if ENV['MAILCHIMP_API_KEY'].present?
+        MAILCHIMP_API_KEY found in start up environment
+      - else
+        Please enter a MAILCHIMP_API_KEY in your start up environment
+      
+      %p
 
-      Please enter the API key from your mailchimp account.
+      Please enter a webhook key so you can authenticate incoming webhooks from Mailchimp.
       %br
       .label.top.req
-        Api key:
-        = text_field_tag 'api_key', @config.api_key, size: 30, required: true
+        Webhook key:
+        = text_field_tag 'webhook_key', @config.webhook_key, size: 30, required: true
 
       %br
       .label.top.req
@@ -79,8 +86,7 @@
 %p
   Add the following URL to each list webhook in Mailchimp that you want to keep in sync:
   %br
-  - url = "#{root_url}endpoints/mailchimp_endpoint?api_key=#{@config.api_key}"
-  = link_to url, url
+  = "#{root_url}endpoints/mailchimp_endpoint?webhook_key=#{@config.webhook_key}"
 
 %p
   = button_to "Reload caches", { action: "reload_cache" }, method: 'put', data: { confirm: "Are you sure you wish to reload the caches?" }

@@ -40,7 +40,7 @@ Start your rails server and goto the Admin -> Mailchimp tab.
 On mailchimp:
 
 1. Login to your mailchimp account and add a webhook for each list you wish to sync.
-2. You can find the inbound webhook url to use on the Admin -> Mailchimp tab underneath the form. It is of the form: https://www.example.com/endpoints/mailchimp_endpoint?api_key=mailchimp-api-key
+2. You can find the inbound webhook url to use on the Admin -> Mailchimp tab underneath the form. It is of the form: https://www.example.com/endpoints/mailchimp_endpoint?webhook_key=<unique key>
 
 Obviously, your webhook address needs to be a publicly accessible url. Mailchimp won't know where to go if you use localhost! However, if you'd like to try out this plugin on your local machine, I've found the ngrok proxy service invaluable. Just make sure you understand what is / does before using it!
 

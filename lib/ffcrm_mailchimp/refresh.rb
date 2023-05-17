@@ -57,7 +57,7 @@ module FfcrmMailchimp
       def subscribe_contact(member)
         options = member.to_webhook_params.to_h
         options.merge!( type: 'subscribe' )
-        Rails.logger.info("FfcrmMailchimp: subscribing #{member.email} to list #{member.list_id}")
+        Rails.logger.info("#{Time.now.to_s(:db)} FfcrmMailchimp: subscribing #{member.email} to list #{member.list_id}")
         InboundSync.process(options)
       end
 
