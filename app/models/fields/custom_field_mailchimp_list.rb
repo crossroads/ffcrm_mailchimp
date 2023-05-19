@@ -88,7 +88,19 @@ class CustomFieldMailchimpList < CustomField
     return if klass_name.blank?
     klass = klass_name.constantize
 
-    klass.serialize(self.name.to_sym, Hash)
+    # serialized_attributes has gone away in Rails > 4
+    if klass.respond_to?('serialized_attributes')
+      if !klass.serialized_attributes.keys.include?(self.name)
+        Rails.logger.debug("#{Time.now.to_s(:db)} FfcrmMailchimp: Serializing #{self.name} as Hash for #{klass}.")
+        klass.serialize(self.name.to_sym, Hash)
+      end
+    else # Rails > 4
+      serialized_attributes = klass.column_names.select{|col| klass.type_for_attribute(col).class == ::ActiveRecord::Type::Serialized }
+      if !serialized_attributes.include?(self.name)
+        Rails.logger.debug("#{Time.now.to_s(:db)} FfcrmMailchimp: Serializing #{self.name} as Hash for #{klass}.")
+        klass.serialize(self.name, Hash)
+      end
+    end
 
     #
     # We store the list and group data as an Array on the custom field
