@@ -144,7 +144,6 @@ module FfcrmMailchimp
         'email' => api_member_hash['email_address'],
         'list_id' => list_id,
         'consent' => api_member_hash['merge_fields']['CONSENT'],
-        'type' => api_member_hash["status"],
         'merges' => merges
       }
       new( 'data' => data )

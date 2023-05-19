@@ -1,5 +1,4 @@
 require 'ffcrm_mailchimp/list'
-require 'ffcrm_mailchimp/member'
 
 module FfcrmMailchimp
 
