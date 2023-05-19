@@ -18,15 +18,20 @@ class Admin::FfcrmMailchimpController < Admin::ApplicationController
     redirect_to( action: 'index' )
   end
 
-  def reload_cache
-    FfcrmMailchimp.reload_cache
-    flash[:info] = "List and group caches reloaded"
+  def clear_cache
+    FfcrmMailchimp.clear_cache
+    flash[:info] = "Mailchimp list and group caches cleared."
     redirect_to( action: 'index' )
   end
 
   def refresh_from_mailchimp
-    FfcrmMailchimp.refresh_from_mailchimp!
-    flash[:info] = "This job has been queued to run as a delayed job. Data will be reloaded from Mailchimp in the background."
+    email_addresses = (params['email_addresses'] || "").split(",").map(&:strip).uniq
+    if email_addresses.blank?
+      flash[:info] = "Please provide at least one email address to reload from Mailchimp"
+    else
+      FfcrmMailchimp.refresh_from_mailchimp!(email_addresses)
+      flash[:info] = "This job has been queued to run as a delayed job. Data for matching email addresses will be reloaded from Mailchimp in the background."
+    end
     redirect_to( action: 'index' )
   end
 

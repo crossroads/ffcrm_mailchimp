@@ -13,12 +13,12 @@ module FfcrmMailchimp
       FfcrmMailchimp::Config.new
     end
 
-    def reload_cache
-      FfcrmMailchimp::List.reload_cache
+    def clear_cache
+      FfcrmMailchimp::Api.clear_cache
     end
 
-    def refresh_from_mailchimp!
-      FfcrmMailchimp::Refresh.delay.refresh_from_mailchimp!
+    def refresh_from_mailchimp!(email_addresses)
+      FfcrmMailchimp::Refresh.delay.refresh_from_mailchimp(email_addresses)
     end
 
     def destroy_custom_fields!

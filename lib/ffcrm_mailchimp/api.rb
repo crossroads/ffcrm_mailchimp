@@ -55,6 +55,7 @@ module FfcrmMailchimp
       #   }
       # ]
       def interest_groupings(list_id)
+        raise RuntimeError, "Please provide a list_id" if list_id.blank?
         Rails.cache.fetch( interest_groupings_cache_key(list_id) ) do
           groups = []
           gibbon = Gibbon::Request.new()
@@ -69,6 +70,44 @@ module FfcrmMailchimp
         end
       end
 
+      #
+      # Get the Mailchimp data for a specific member
+      # Returns a Hash object
+      # { "email_address": "string",
+      #   "status": "subscribed",
+      #   "merge_fields": {
+      #     "property1": null,
+      #     "property2": null
+      #   },
+      #   "interests": {
+      #     "70b7107c8a": true,
+      #     "7c1719c788": false
+      #   }
+      # }
+      def lookup_member_on_list(list_id, email_address)
+        gibbon = Gibbon::Request.new()
+        begin
+          result = gibbon.lists(list_id).members(email_digest(email_address)).retrieve
+        rescue Gibbon::MailChimpError => e
+          FfcrmMailchimp.logger.error("#{Time.now.to_s(:db)} FfcrmMailchimp::Api: Gibbon::MailchimpError #{e.status_code} #{e.title} #{e.detail} #{e.body} ")
+          if (e.status_code == 404)
+            result = {} # member not found on list
+          else
+            raise e
+          end
+        end
+        result
+      end
+
+      def clear_cache
+        all_lists.each do |list|
+          FfcrmMailchimp.logger.info("#{Time.now.to_s(:db)} FfcrmMailchimp::Api: Clearing cache: #{interest_groupings_cache_key(list['id'])}")
+          Rails.cache.delete( interest_groupings_cache_key(list['id']) )
+        end
+        FfcrmMailchimp.logger.info("#{Time.now.to_s(:db)} FfcrmMailchimp::Api: Clearing cache: #{all_lists_cache_key}")
+        Rails.cache.delete( all_lists_cache_key )
+      end
+      
       private
 
       def all_lists_cache_key

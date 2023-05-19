@@ -114,5 +114,70 @@ module FfcrmMailchimp
       ListSubscription.new( 'list_id' => list_id, 'source' => 'webhook', 'groupings' => groups )
     end
 
+    #
+    # Creates a new WebhookParams object from a Mailchimp API list member response
+    # api_member_hash =
+    #   { "email_address": "test@example.com",
+    #     "list_id" : "3d532d43",
+    #     "status": "subscribed",
+    #     "merge_fields": {
+    #       "FIRST_NAME": "Jeremy",
+    #       "LAST_NAME": "Nullson"
+    #     },
+    #     "interests": {
+    #       "70b7107c8a": true,
+    #       "7c1719c788": false,
+    #       "8d856390f6": true,
+    #     }
+    #   }
+    # )
+    # currently doesn't handle address or phone
+    def self.new_from_api(api_member_hash)
+      list_id = api_member_hash['list_id']
+      merges = {
+        'EMAIL' => api_member_hash['email_address'],
+        'FIRST_NAME' => api_member_hash['merge_fields']['FIRST_NAME'],
+        'LAST_NAME' => api_member_hash['merge_fields']['LAST_NAME'],
+        'GROUPINGS' => convert_interest_groups(list_id, api_member_hash['interests'])
+      }
+      data = {
+        'email' => api_member_hash['email_address'],
+        'list_id' => list_id,
+        'consent' => api_member_hash['merge_fields']['CONSENT'],
+        'type' => api_member_hash["status"],
+        'merges' => merges
+      }
+      new( 'data' => data )
+    end
+
+    private
+
+    # Converts "interests"=>{"70b7107c8a"=>true, "7c1719c788"=>false, "8d856390f6"=>true ...}
+    # into
+    # {"0"=>
+    #   {"id"=>"5641",
+    #    "name"=>"Group One",
+    #    "groups"=>"Option 1, Option 3"
+    #   },
+    #  "1"=>
+    #    {"id"=>"8669",
+    #     "name"=>"Group Two",
+    #     "groups"=>"Option 3, Option 4"
+    #    }
+    # }
+    def self.convert_interest_groups(list_id, subscribed_interest_groups)
+      subscribed_interest_group_ids = (subscribed_interest_groups || {}).select{ |interest_id, value| value }.keys
+      interest_subscriptions = []
+      FfcrmMailchimp::Api.interest_groupings(list_id).each do |grouping|
+        group_names = grouping['groups'].select{|x| subscribed_interest_group_ids.include?(x['id'])}.map{|x| x["name"]}
+        interest_subscriptions << ( {"id" => grouping['id'], "name" => grouping["title"], "groups" => group_names.join(", ")} ) if group_names.any?
+      end
+      result = {}
+      interest_subscriptions.each_with_index do |interest_category, index|
+        result[index.to_s] = interest_category
+      end
+      result
+    end
+
   end
 end

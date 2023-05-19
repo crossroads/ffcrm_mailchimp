@@ -8,13 +8,18 @@ module FfcrmMailchimp
     class << self
 
       #
-      # Refresh data from mailchimp. This will clear all list/group data
-      # for all mailchimp lists inside CRM and reload the subscription data
-      # from Mailchimp.
-      def refresh_from_mailchimp!
-        FfcrmMailchimp::List.reload_cache
-        clear_crm_mailchimp_data!
-        load_crm_with_mailchimp_data!
+      # Refresh data from Mailchimp for the given email_addresses
+      # For all the 'mailchimp list' custom fields, grab the list
+      # subscriptions from mailchimp and update CRM
+      def refresh_from_mailchimp(email_addresses = [])
+        FfcrmMailchimp.config.mailchimp_list_fields.each do |f|
+          if ( list = FfcrmMailchimp::List.find( f.list_id ) )
+            email_addresses.each do |email_address|
+              member = FfcrmMailchimp::Api.lookup_member_on_list(list.id, email_address)
+              subscribe_contact(member) unless member['email_address'].blank? # record found in mailchimp
+            end
+          end
+        end
       end
 
       #
@@ -33,36 +38,19 @@ module FfcrmMailchimp
       # Delete all the Mailchimp data inside CRM
       # Sets all Mailchimp List custom_field columns to null
       def clear_crm_mailchimp_data!
-        config.mailchimp_list_fields.collect{ |f| [f.klass, f.name] }.each do |klass, attr|
+        FfcrmMailchimp.config.mailchimp_list_fields.collect{ |f| [f.klass, f.name] }.each do |klass, attr|
           klass.update_all( attr => nil )
         end
       end
 
       private
 
-      #
-      # For all the 'mailchimp list' custom fields, grab the list
-      # subscriptions from mailchimp and update CRM
-      def load_crm_with_mailchimp_data!
-        config.mailchimp_list_fields.each do |f|
-          if ( list = FfcrmMailchimp::List.find( f.list_id ) )
-            list.members.each do |member|
-              subscribe_contact( member )
-            end
-          end
-        end
-      end
-
-      # Adapts a WebhookParams object into something suitable for InboundSync
+      # Adapts a Mailchimp list member API response into something suitable for InboundSync
       def subscribe_contact(member)
-        options = member.to_webhook_params.to_h
-        options.merge!( type: 'subscribe' )
-        Rails.logger.info("#{Time.now.to_s(:db)} FfcrmMailchimp: subscribing #{member.email} to list #{member.list_id}")
-        InboundSync.process(options)
-      end
-
-      def config
-        FfcrmMailchimp.config
+        params = FfcrmMailchimp::WebhookParams.new_from_api(member).to_h
+        params.merge!( type: 'subscribe' )
+        Rails.logger.info("#{Time.now.to_s(:db)} FfcrmMailchimp: subscribing #{member["email_address"]} to list #{member["list_id"]}")
+        InboundSync.process(params)
       end
 
     end

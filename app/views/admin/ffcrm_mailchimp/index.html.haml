@@ -28,6 +28,12 @@
         Webhook key:
         = text_field_tag 'webhook_key', @config.webhook_key, size: 30, required: true
 
+      %p
+        Add the following URL to each list webhook in Mailchimp that you want to keep in sync:
+        %br
+        %a{ href:"#{root_url}endpoints/mailchimp_endpoint?webhook_key=#{@config.webhook_key}" }
+          = "#{root_url}endpoints/mailchimp_endpoint?webhook_key=#{@config.webhook_key}"
+
       %br
       .label.top.req
         Default user:
@@ -82,19 +88,23 @@
       %p
       = submit_tag 'Save', name: 'update', style: "width:60px"
 
+%h2 Update from Mailchimp
+
+= form_tag controller: 'ffcrm_mailchimp', action: 'refresh_from_mailchimp' do
+  %p
+    Enter a comma separated list of email addresses to sync from Mailchimp. This will reload the name, list and group subscription data ONLY.
+    Will NOT update extra MERGE FIELDS such as phone, address, country and consent.
+    %br
+    = text_area_tag(:email_addresses, "", placeholder: "Enter email addresses to sync from Mailchimp here. Comma separated.", size: "100x4")
+  %p  
+    = submit_tag "Refresh data from Mailchimp", data: { confirm: "Are you sure you wish to refresh data from mailchimp?" }
+    
+
+%hr
 
 %p
-  Add the following URL to each list webhook in Mailchimp that you want to keep in sync:
-  %br
-  = "#{root_url}endpoints/mailchimp_endpoint?webhook_key=#{@config.webhook_key}"
-
-%p
-  = button_to "Reload caches", { action: "reload_cache" }, method: 'put', data: { confirm: "Are you sure you wish to reload the caches?" }
-  Clear and reload the mailchimp list and group cache
-
-%p
-  = button_to "Update data from Mailchimp", { action: "refresh_from_mailchimp" }, method: 'put', data: { confirm: "Are you sure you wish to refresh data from mailchimp?" }
-  Refresh data from mailchimp. This will clear all list/group data for all mailchimp lists inside CRM and reload the subscription data from mailchimp.
+  = button_to "Clear Mailchimp caches", { action: "clear_cache" }, method: 'put', data: { confirm: "Are you sure you wish to clear the Mailchimp caches?" }
+  Clear the mailchimp list and group caches. Useful if a interest groups are added or changed. Or a new list is created. Non-descructive action
 
 %p
   = button_to "Clear all mailchimp data in CRM", { action: "clear_crm_mailchimp_data" }, method: 'put', data: { confirm: "Are you sure you wish to delete all Mailchimp List data that is stored inside CRM?" }
