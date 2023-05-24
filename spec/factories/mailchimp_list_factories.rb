@@ -1,5 +1,5 @@
 FactoryGirl.define do
-  factory :mailchimp_list, class: Gibbon::APICategory do
+  factory :list do
     id "test1234"
     web_id { rand(10) }
     name FFaker::Lorem.sentence(1)

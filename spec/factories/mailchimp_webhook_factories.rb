@@ -29,7 +29,7 @@ FactoryGirl.define do
     controller "ffcrm_endpoint/endpoints"
     action     "consume"
     klass_name  "mailchimp_endpoint"
-    api_key ''
+    webhook_key ''
     initialize_with { attributes }
   end
 

@@ -1,5 +1,3 @@
-require 'gibbon'
-
 module FfcrmMailchimp
 
   class Config
@@ -15,9 +13,8 @@ module FfcrmMailchimp
     def update!(options)
       @config = Setting.ffcrm_mailchimp = {
         sync_disabled: options[:sync_disabled],
-        api_key: options[:api_key],
+        webhook_key: options[:webhook_key],
         user_id: options[:user_id],
-        iron_mq: options[:iron_mq],
         verbose: options[:verbose],
         subgroups_only: options[:subgroups_only],
         track_phone: options[:track_phone],
@@ -26,6 +23,7 @@ module FfcrmMailchimp
         track_consent: options[:track_consent],
         consent_field_name: options[:consent_field_name],
       }
+      FfcrmMailchimp.logger.level = (options[:verbose] == 'true' ? Logger::INFO : Logger::ERROR)
     end
 
     #
@@ -43,24 +41,14 @@ module FfcrmMailchimp
     end
 
     #
-    # The api key is used to connect to Mailchimp accounts.
-    def api_key
-      config.present? ? config[:api_key] : nil
-    end
-
-    def mailchimp_api
-      Gibbon::API.new(api_key)
+    # The key is used to verify incoming Mailchimp webhooks.
+    def webhook_key
+      config.present? ? config[:webhook_key] : nil
     end
 
     # the id of a CRM user that will be the 'mailchimp' user in Papertrail
     def user_id
       config.present? ? config[:user_id] : nil
-    end
-
-    #
-    # Is the inbound request from Iron MQ
-    def iron_mq
-      config.present? ? config[:iron_mq] : nil
     end
 
     def verbose

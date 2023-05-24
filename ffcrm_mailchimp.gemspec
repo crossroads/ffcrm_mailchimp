@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
   s.add_dependency "rails"
   s.add_dependency "fat_free_crm"
   s.add_dependency "ffcrm_endpoint"
-  s.add_dependency "gibbon", "~>1"
+  s.add_dependency "gibbon"
   s.add_dependency "delayed_job_active_record"
   s.add_development_dependency "pg"
   s.add_development_dependency 'rspec-rails'

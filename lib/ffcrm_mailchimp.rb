@@ -1,5 +1,4 @@
 require "ffcrm_mailchimp/config"
-require "ffcrm_mailchimp/compare"
 require "ffcrm_mailchimp/engine"
 require "ffcrm_mailchimp/list"
 require "ffcrm_mailchimp/refresh"
@@ -14,12 +13,12 @@ module FfcrmMailchimp
       FfcrmMailchimp::Config.new
     end
 
-    def reload_cache
-      FfcrmMailchimp::List.reload_cache
+    def clear_cache
+      FfcrmMailchimp::Api.clear_cache
     end
 
-    def refresh_from_mailchimp!
-      FfcrmMailchimp::Refresh.delay.refresh_from_mailchimp!
+    def refresh_from_mailchimp!(email_addresses)
+      FfcrmMailchimp::Refresh.delay.refresh_from_mailchimp(email_addresses)
     end
 
     def destroy_custom_fields!
@@ -30,14 +29,11 @@ module FfcrmMailchimp
       FfcrmMailchimp::Refresh.clear_crm_mailchimp_data!
     end
 
-    def logger(message)
-      if config.verbose
-        Rails.logger.info("FfcrmMailchimp: #{message}")
+    def logger
+      @logger ||= begin
+        level = config.verbose ? Logger::INFO : Logger::ERROR
+        Logger.new(File.join(Rails.root, 'log', 'ffcrm_mailchimp.log'), level: level)
       end
-    end
-
-    def compare(list_id)
-      FfcrmMailchimp::Compare.new(list_id)
     end
 
     def lists

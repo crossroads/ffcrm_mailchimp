@@ -12,10 +12,10 @@ class FfcrmMailchimp::MailchimpEndpoint < FfcrmEndpoint::Endpoint
   end
 
   #
-  # Authenticate inbound webhooks from mailchimp. Must contain a valid api_key
+  # Authenticate inbound webhooks from mailchimp. Must contain a valid webhook_key
   def authenticate
-    api_key = FfcrmMailchimp.config.api_key
-    api_key.present? && params[:api_key] == api_key
+    webhook_key = FfcrmMailchimp.config.webhook_key
+    webhook_key.present? && params["webhook_key"] == webhook_key
   end
 
   private
@@ -27,14 +27,8 @@ class FfcrmMailchimp::MailchimpEndpoint < FfcrmEndpoint::Endpoint
     PaperTrail.whodunnit = user_id if defined?(PaperTrail) and user_id.present? and User.where(id: user_id).any?
   end
 
-  #
-  # Parse an IronMQ request, if desired
   def data
-    if FfcrmMailchimp.config.iron_mq.nil?
-      params
-    else
-      CGI::parse(request.body.read)
-    end
+    params
   end
 
 end

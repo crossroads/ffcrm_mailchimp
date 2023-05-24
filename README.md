@@ -40,7 +40,7 @@ Start your rails server and goto the Admin -> Mailchimp tab.
 On mailchimp:
 
 1. Login to your mailchimp account and add a webhook for each list you wish to sync.
-2. You can find the inbound webhook url to use on the Admin -> Mailchimp tab underneath the form. It is of the form: https://www.example.com/endpoints/mailchimp_endpoint?api_key=mailchimp-api-key
+2. You can find the inbound webhook url to use on the Admin -> Mailchimp tab underneath the form. It is of the form: https://www.example.com/endpoints/mailchimp_endpoint?webhook_key=<unique key>
 
 Obviously, your webhook address needs to be a publicly accessible url. Mailchimp won't know where to go if you use localhost! However, if you'd like to try out this plugin on your local machine, I've found the ngrok proxy service invaluable. Just make sure you understand what is / does before using it!
 
@@ -122,3 +122,17 @@ When you use FFCRM to subscribe someone to a MailChimp list, the person will not
 * Resolve the case where there are two contacts in FFCRM with the same email address - form should not pass validation if a mailchimp list is checked and there is a duplicate email address. This seems like the best compromise as it allows you to have contacts with duplicate emails in FFCRM but NOT if that affects MailChimp.
 * When FFCRM creates a new contact via the InboundSync, if the Mailchimp List custom field is in a Field Group with a Tag, the tag is not added to the contact and the fields are not visible in FFCRM until it is added.
 * Table view showing if sync is out of date - say if there are emails subscribed in FFCRM but not mailchimp. (For sanity checking)
+
+## Development
+
+```
+rvm install ruby-2.0.0-p648
+gem install bundler -v 1.7.3
+bundle install
+# edit spec/dummy/config/database.yml
+rake db:create
+rake db:schema:load
+RAILS_ENV=test rake db:create
+RAILS_ENV=test rake db:schema:load
+rake spec
+```

@@ -13,23 +13,26 @@
       %label.label.top{ for: 'sync_disabled' }
         Disable sync? If checked, sync will not work in either direction.
 
-      - if @lists.any?
-        %br
-        Click here to check if items are in sync for the following lists.
-        (Note: may take a while to export and compare objects.)
-        - @lists.each do |list|
-          %ul
-            %li
-              %a{href: url_for(action: 'compare', list_id: list.id) }
-                = "#{list.name} (#{list.member_count} members)"
-
+      %p
+      %br
+      - if ENV['MAILCHIMP_API_KEY'].present?
+        MAILCHIMP_API_KEY found in start up environment
+      - else
+        Please enter a MAILCHIMP_API_KEY in your start up environment
+      
       %p
 
-      Please enter the API key from your mailchimp account.
+      Please enter a webhook key so you can authenticate incoming webhooks from Mailchimp.
       %br
       .label.top.req
-        Api key:
-        = text_field_tag 'api_key', @config.api_key, size: 30, required: true
+        Webhook key:
+        = text_field_tag 'webhook_key', @config.webhook_key, size: 30, required: true
+
+      %p
+        Add the following URL to each list webhook in Mailchimp that you want to keep in sync:
+        %br
+        %a{ href:"#{root_url}endpoints/mailchimp_endpoint?webhook_key=#{@config.webhook_key}" }
+          = "#{root_url}endpoints/mailchimp_endpoint?webhook_key=#{@config.webhook_key}"
 
       %br
       .label.top.req
@@ -40,11 +43,6 @@
         This is the default user for actions that occur via webhooks.
         Not all webhooks provide 'user' information, in those cases, this user will own the operation.
         It is recommended you create a Fat Free CRM user purely for this purpose.
-
-      %br
-      = check_box_tag('iron_mq', 'true', !@config.iron_mq.nil?)
-      %label.label.top{ for: 'iron_mq' }
-        Use Iron MQ for inbound requests?
 
       %br
       = check_box_tag('verbose', 'true', @config.verbose == true)
@@ -90,20 +88,23 @@
       %p
       = submit_tag 'Save', name: 'update', style: "width:60px"
 
+%h2 Update from Mailchimp
+
+= form_tag controller: 'ffcrm_mailchimp', action: 'refresh_from_mailchimp' do
+  %p
+    Enter a comma separated list of email addresses to sync from Mailchimp. This will reload the name, list and group subscription data ONLY.
+    Will NOT update extra MERGE FIELDS such as phone, address, country and consent.
+    %br
+    = text_area_tag(:email_addresses, "", placeholder: "Enter email addresses to sync from Mailchimp here. Comma separated.", size: "100x4")
+  %p  
+    = submit_tag "Refresh data from Mailchimp", data: { confirm: "Are you sure you wish to refresh data from mailchimp?" }
+    
+
+%hr
 
 %p
-  Add the following URL to each list webhook in Mailchimp that you want to keep in sync:
-  %br
-  - url = "#{root_url}endpoints/mailchimp_endpoint?api_key=#{@config.api_key}"
-  = link_to url, url
-
-%p
-  = button_to "Reload caches", { action: "reload_cache" }, method: 'put', data: { confirm: "Are you sure you wish to reload the caches?" }
-  Clear and reload the mailchimp list and group cache
-
-%p
-  = button_to "Update data from Mailchimp", { action: "refresh_from_mailchimp" }, method: 'put', data: { confirm: "Are you sure you wish to refresh data from mailchimp?" }
-  Refresh data from mailchimp. This will clear all list/group data for all mailchimp lists inside CRM and reload the subscription data from mailchimp.
+  = button_to "Clear Mailchimp caches", { action: "clear_cache" }, method: 'put', data: { confirm: "Are you sure you wish to clear the Mailchimp caches?" }
+  Clear the mailchimp list and group caches. Useful if a interest groups are added or changed. Or a new list is created. Non-descructive action
 
 %p
   = button_to "Clear all mailchimp data in CRM", { action: "clear_crm_mailchimp_data" }, method: 'put', data: { confirm: "Are you sure you wish to delete all Mailchimp List data that is stored inside CRM?" }
