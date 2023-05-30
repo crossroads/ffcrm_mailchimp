@@ -24,7 +24,7 @@ class FfcrmMailchimp::MailchimpEndpoint < FfcrmEndpoint::Endpoint
   # Attribute updates in FFCRM to a particular user
   def set_paper_trail_user
     user_id = FfcrmMailchimp.config.user_id
-    PaperTrail.whodunnit = user_id if defined?(PaperTrail) and user_id.present? and User.where(id: user_id).any?
+    PaperTrail.request.whodunnit = user_id if defined?(PaperTrail) and user_id.present? and User.where(id: user_id).any?
   end
 
   def data
