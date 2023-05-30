@@ -1,8 +1,8 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe FfcrmMailchimp::Changes do
 
-  let(:contact) { FactoryGirl.build(:contact) }
+  let(:contact) { FactoryBot.build(:contact) }
   let(:changes) { FfcrmMailchimp::Changes.new(contact) }
 
   context "email changed" do

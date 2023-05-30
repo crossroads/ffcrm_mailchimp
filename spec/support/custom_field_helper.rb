@@ -1,3 +1,5 @@
+require 'active_support/hash_with_indifferent_access'
+
 module CustomFieldHelper
 
   #
@@ -14,9 +16,9 @@ module CustomFieldHelper
   end
 
   def setup_custom_field_record
-    field_group = FactoryGirl.create(:field_group, klass_name: "Contact")
+    field_group = FactoryBot.create(:field_group, klass_name: "Contact")
     settings = { list_id: custom_field_list_id }.with_indifferent_access
-    FactoryGirl.create(:field, field_group_id: field_group.id, type: "CustomFieldMailchimpList",
+    FactoryBot.create(:field, field_group_id: field_group.id, type: "CustomFieldMailchimpList",
       label: "custom_field", name: "custom_field", as: "mailchimp_list", settings: settings)
     FfcrmMailchimp.config.mailchimp_list_fields.map(&:apply_serialization)
   end

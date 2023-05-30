@@ -1,13 +1,13 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe FfcrmMailchimp::Group do
 
   let(:group) { FfcrmMailchimp::Group.new( mailchimp_group ) }
-  let(:mailchimp_group) { FactoryGirl.build(:mailchimp_group) }
+  let(:mailchimp_group) { FactoryBot.build(:mailchimp_group) }
   let(:list_id) { '1234' }
 
   before do 
-    FfcrmMailchimp::Api.stub(:interest_groupings).with(list_id).and_return([mailchimp_group])
+    allow(FfcrmMailchimp::Api).to receive(:interest_groupings).with(list_id).and_return([mailchimp_group])
   end
 
   describe "initialization" do
@@ -24,7 +24,7 @@ describe FfcrmMailchimp::Group do
     end
 
     context "when no groups exists" do
-      before { FfcrmMailchimp::Api.stub(:interest_groupings).with(list_id).and_return([]) }
+      before { allow(FfcrmMailchimp::Api).to receive(:interest_groupings).with(list_id).and_return([]) }
       it { expect( FfcrmMailchimp::Group.groups_for(list_id) ).to eql( [] ) }
     end
 
@@ -32,9 +32,9 @@ describe FfcrmMailchimp::Group do
 
   describe "group_names" do
 
-    let(:group1) { FactoryGirl.build(:interest_grouping, name: "Option 1") }
-    let(:group2) { FactoryGirl.build(:interest_grouping, name: "Option 2") }
-    let(:mailchimp_group) { FactoryGirl.build(:mailchimp_group, groups: [group1, group2] ) }
+    let(:group1) { FactoryBot.build(:interest_grouping, name: "Option 1") }
+    let(:group2) { FactoryBot.build(:interest_grouping, name: "Option 2") }
+    let(:mailchimp_group) { FactoryBot.build(:mailchimp_group, groups: [group1, group2] ) }
 
     it { expect( group.group_names ).to include("Option 1") }
     it { expect( group.group_names ).to include("Option 2") }

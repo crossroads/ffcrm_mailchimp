@@ -1,8 +1,8 @@
-require 'spec_helper'
+require 'rails_helper'
 describe FfcrmMailchimp::MailchimpEndpoint do
 
   let(:webhook_key) { "akwdjffdke" }
-  let(:params)      { FactoryGirl.build(:mc_webhook, webhook_key: webhook_key).with_indifferent_access }
+  let(:params)      { FactoryBot.build(:mailchimp_webhook, webhook_key: webhook_key).with_indifferent_access }
   let(:request)     { double(params: params) }
   let(:mc_endpoint) { FfcrmMailchimp::MailchimpEndpoint.new(request) }
 
@@ -27,16 +27,16 @@ describe FfcrmMailchimp::MailchimpEndpoint do
 
   describe "set_paper_trail_user" do
 
-    let(:user) { FactoryGirl.create(:user) }
+    let(:user) { FactoryBot.create(:user) }
 
-    before { PaperTrail.whodunnit = nil } # class variable needs resetting on each test run
+    before { PaperTrail.request.whodunnit = nil } # class variable needs resetting on each test run
 
     context "with valid user" do
       before {
         expect(FfcrmMailchimp).to receive(:config).and_return( double(user_id: user.id) )
         mc_endpoint.send(:set_paper_trail_user)
       }
-      it { expect( PaperTrail.whodunnit ).to eql( user.id ) }
+      it { expect( PaperTrail.request.whodunnit ).to eql( user.id ) }
     end
 
     context "when user not found" do
@@ -44,7 +44,7 @@ describe FfcrmMailchimp::MailchimpEndpoint do
         expect(FfcrmMailchimp).to receive(:config).and_return( double(user_id: user.id + 1) )
         mc_endpoint.send(:set_paper_trail_user)
        }
-      it { expect( PaperTrail.whodunnit ).to eql( nil ) }
+      it { expect( PaperTrail.request.whodunnit ).to eql( nil ) }
     end
 
     context "when user_id not set" do
@@ -52,7 +52,7 @@ describe FfcrmMailchimp::MailchimpEndpoint do
         expect(FfcrmMailchimp).to receive(:config).and_return( double(user_id: nil) )
         mc_endpoint.send(:set_paper_trail_user)
        }
-      it { expect( PaperTrail.whodunnit ).to eql( nil ) }
+      it { expect( PaperTrail.request.whodunnit ).to eql( nil ) }
     end
 
   end

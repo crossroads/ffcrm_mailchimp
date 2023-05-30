@@ -1,6 +1,6 @@
 require 'ffaker'
 
-FactoryGirl.define do
+FactoryBot.define do
 
   # FfcrmMailchimp::Changes.new(record)
   factory :changes, class: FfcrmMailchimp::Changes do

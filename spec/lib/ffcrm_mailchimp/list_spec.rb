@@ -1,10 +1,10 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe FfcrmMailchimp::List do
 
-  let(:lists) { FactoryGirl.build_list(:mailchimp_list, 2) }
+  let(:lists) { FactoryBot.build_list(:mailchimp_list, 2) }
 
-  before { FfcrmMailchimp::Api.stub(:all_lists).and_return( lists ) }
+  before { allow(FfcrmMailchimp::Api).to receive(:all_lists).and_return( lists ) }
 
   context "when initialized" do
     let(:list) { FfcrmMailchimp::List.new( id: '123', name: 'test') }

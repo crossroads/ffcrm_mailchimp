@@ -1,6 +1,6 @@
-FactoryGirl.define do
+FactoryBot.define do
 
-  factory :mc_webhook, class: Hash do
+  factory :mailchimp_webhook, class: Hash do
     data {{ 'email' => "test@example.com",
             'merges' => {
               'EMAIL' => "test@example.com",
@@ -24,12 +24,12 @@ FactoryGirl.define do
             'old_email' => "test@example.com",
             'list_id' => "3e26bc072d"
          }}
-    type "subscribe"
+    type { "subscribe" }
     fired_at { Time.now }
-    controller "ffcrm_endpoint/endpoints"
-    action     "consume"
-    klass_name  "mailchimp_endpoint"
-    webhook_key ''
+    controller { "ffcrm_endpoint/endpoints" }
+    action     { "consume" }
+    klass_name  { "mailchimp_endpoint" }
+    webhook_key { '' }
     initialize_with { attributes }
   end
 

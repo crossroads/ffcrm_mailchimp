@@ -1,9 +1,9 @@
-require 'spec_helper'
+require 'rails_helper'
 
 describe FfcrmMailchimp::InboundSync do
 
-  before(:all) { setup_custom_field_record }
-  after(:all)  { teardown_custom_field_record }
+  before { setup_custom_field_record }
+  after { teardown_custom_field_record }
 
   let(:email)      { "test@example.com" }
   let(:new_email)  { "new_test@example.com" }
@@ -22,34 +22,34 @@ describe FfcrmMailchimp::InboundSync do
                            INTERESTS: interests, GROUPINGS: groupings }
              } }
 
-  let(:params)  { FactoryGirl.build(:mc_webhook, data: data) }
+  let(:params)  { FactoryBot.build(:mailchimp_webhook, data: data) }
   let(:sync)    { FfcrmMailchimp::InboundSync.new( params ) }
-  let(:contact) { FactoryGirl.build(:contact) }
+  let(:contact) { FactoryBot.build(:contact) }
 
   describe "process" do
 
     before { allow(sync).to receive(:custom_field).and_return( double(CustomField) ) }
 
     context "when type is 'subscribe'" do
-      let(:params) { FactoryGirl.build(:mc_webhook, type: 'subscribe') }
+      let(:params) { FactoryBot.build(:mailchimp_webhook, type: 'subscribe') }
       it { expect( sync ).to receive(:subscribe)
            sync.process }
     end
 
     context "when type is 'profile'" do
-      let(:params) { FactoryGirl.build(:mc_webhook, type: 'profile') }
+      let(:params) { FactoryBot.build(:mailchimp_webhook, type: 'profile') }
       it { expect( sync ).to receive(:profile_update)
            sync.process }
     end
 
     context "when type is 'upemail'" do
-      let(:params) { FactoryGirl.build(:mc_webhook, type: 'upemail') }
+      let(:params) { FactoryBot.build(:mailchimp_webhook, type: 'upemail') }
       it { expect( sync ).to receive(:email_changed)
            sync.process }
     end
 
     context "when type is 'unsubscribe'" do
-      let(:params) { FactoryGirl.build(:mc_webhook, type: 'unsubscribe') }
+      let(:params) { FactoryBot.build(:mailchimp_webhook, type: 'unsubscribe') }
       it { expect( sync ).to receive(:unsubscribe)
            sync.process }
     end
@@ -72,7 +72,7 @@ describe FfcrmMailchimp::InboundSync do
 
   describe "subscribe" do
 
-    let(:params)  { FactoryGirl.build(:mc_webhook, type: 'subscribe', data: data) }
+    let(:params)  { FactoryBot.build(:mailchimp_webhook, type: 'subscribe', data: data) }
 
     context "when user doesn't exist" do
       it "should create new user" do
@@ -110,7 +110,7 @@ describe FfcrmMailchimp::InboundSync do
 
   describe "profile_update" do
 
-    let(:params)  { FactoryGirl.build(:mc_webhook, type: 'profile', data: data) }
+    let(:params)  { FactoryBot.build(:mailchimp_webhook, type: 'profile', data: data) }
     before {
       mock_contact = double(Contact)
       expect(mock_contact).to receive_message_chain(:order, :first).and_return(contact)
@@ -128,12 +128,12 @@ describe FfcrmMailchimp::InboundSync do
 
   describe "email_changed" do
 
-    let(:params)   { FactoryGirl.build(:mc_webhook, type: 'upemail', data: data) }
-    let(:contact2) { FactoryGirl.build(:contact) }
+    let(:params)   { FactoryBot.build(:mailchimp_webhook, type: 'upemail', data: data) }
+    let(:contact2) { FactoryBot.build(:contact) }
 
     context "when new email doesn't exist" do
       it "should update email" do
-        contact = FactoryGirl.create(:contact, email: old_email)
+        contact = FactoryBot.create(:contact, email: old_email)
         sync.send(:email_changed)
         expect( contact.reload.email ).to eq( new_email )
       end
@@ -142,15 +142,15 @@ describe FfcrmMailchimp::InboundSync do
     context "when new email does exist" do
 
       it "should unsubscribe the old_email user" do
-        old_contact = FactoryGirl.create(:contact, email: old_email)
-        new_contact = FactoryGirl.create(:contact, email: new_email)
+        old_contact = FactoryBot.create(:contact, email: old_email)
+        new_contact = FactoryBot.create(:contact, email: new_email)
         mock_old_contact = double(Contact)
         expect(mock_old_contact).to receive_message_chain(:order, :first).and_return(old_contact)
         mock_new_contact = double(Contact)
         expect(mock_new_contact).to receive_message_chain(:order, :first).and_return(new_contact)
         expect(Contact).to receive(:where).with(email: old_email).and_return( mock_old_contact )
         expect(Contact).to receive(:where).with(email: new_email).and_return( mock_new_contact )
-        expect(old_contact).to receive(:update_attributes) do |args|
+        expect(old_contact).to receive(:update) do |args|
           expect(args[ cf_name ] ).to eql( {} )
         end
         sync.send(:email_changed)
@@ -160,7 +160,7 @@ describe FfcrmMailchimp::InboundSync do
 
     context "when contact with old_email doesn't exist" do
       it "should ignore the update" do
-        expect_any_instance_of(Contact).not_to receive(:update_attributes)
+        expect_any_instance_of(Contact).not_to receive(:update)
         sync.send(:email_changed)
       end
     end
@@ -169,14 +169,14 @@ describe FfcrmMailchimp::InboundSync do
 
   describe "unsubscribe" do
 
-    let(:params)   { FactoryGirl.build(:mc_webhook, type: 'unsubscribe', data: data) }
+    let(:params)   { FactoryBot.build(:mailchimp_webhook, type: 'unsubscribe', data: data) }
 
     context "when user is found" do
       it "should unsubscribe" do
         mock_contact = double(Contact)
         expect(mock_contact).to receive_message_chain(:order, :first).and_return(contact)
         expect(Contact).to receive(:where).with( email: email ).and_return( mock_contact )
-        expect(contact).to receive(:update_attributes) do |args|
+        expect(contact).to receive(:update) do |args|
           expect(args[ cf_name ] ).to eql( {} )
         end
         sync.send(:unsubscribe)
@@ -188,7 +188,7 @@ describe FfcrmMailchimp::InboundSync do
         mock_contact = double(Contact)
         expect(mock_contact).to receive_message_chain(:order, :first).and_return(nil)
         expect(Contact).to receive(:where).with( email: email ).and_return( mock_contact )
-        expect_any_instance_of(Contact).not_to receive(:update_attributes)
+        expect_any_instance_of(Contact).not_to receive(:update)
         sync.send(:unsubscribe)
       end
     end
@@ -214,8 +214,8 @@ describe FfcrmMailchimp::InboundSync do
 
     context "when more than one contact with same email" do
 
-      let(:contact)  { FactoryGirl.create(:contact, email: email) }
-      let(:contact2) { FactoryGirl.create(:contact, email: email) }
+      let(:contact)  { FactoryBot.create(:contact, email: email) }
+      let(:contact2) { FactoryBot.create(:contact, email: email) }
 
       it "should always pick contact with lowest id" do
         correct_contact = contact.id < contact2.id ? contact : contact2

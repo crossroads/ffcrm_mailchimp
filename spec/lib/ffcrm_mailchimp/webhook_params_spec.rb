@@ -1,8 +1,9 @@
-require 'spec_helper'
+require 'rails_helper'
+require 'ffcrm_mailchimp/webhook_params'
 
-describe FfcrmMailchimp::WebhookParams do
+describe 'FfcrmMailchimp::WebhookParams' do
 
-  let(:webhook_data)  { FactoryGirl.build(:mc_webhook)[:data] }
+  let(:webhook_data)  { FactoryBot.build(:mailchimp_webhook)[:data] }
   let(:webhook)       { FfcrmMailchimp::WebhookParams.new( data: webhook_data ) }
 
   context "email" do
