@@ -93,28 +93,6 @@ class CustomFieldMailchimpList < CustomField
       Rails.logger.debug("#{Time.now.to_s(:db)} FfcrmMailchimp: Serializing #{self.name} as Hash for #{klass}.")
       klass.serialize(self.name, Hash)
     end
-
-    #
-    # We store the list and group data as an Array on the custom field
-    # but it can be converted to a ListSubscription to do useful things.
-    attr = self.name
-    unless klass.instance_methods.include?(:"#{attr}=")
-      klass.class_eval <<-WRITER, __FILE__, __LINE__ + 1
-        # Override the mutator on the object class to ensure items are serialized correctly
-        define_method "#{attr}=" do |value|
-          data = if (value == nil)
-              nil
-            elsif value.is_a?(FfcrmMailchimp::ListSubscription)
-              value.to_h
-            elsif value.respond_to?(:to_h)
-              FfcrmMailchimp::ListSubscription.from_form( value ).to_h
-            else
-              raise RuntimeError, "FfcrmMailchimp: #{attr}= must be passed a ListSubscription object, something hash-like or nil. Got #{attr.class}"
-            end
-          write_attribute( attr, data )
-        end
-      WRITER
-    end
   end
 
   private

@@ -84,9 +84,9 @@ module FfcrmMailchimp
       new_contact = Contact.where(email: data.new_email).order(:id).first
       return if !old_contact.present?
       if !new_contact.present?
-        old_contact.update_attributes( email: data.new_email )
+        old_contact.update( email: data.new_email )
       else
-        old_contact.update_attributes( custom_field.name => {} )
+        old_contact.update( custom_field.name => {} )
       end
     end
 
@@ -94,7 +94,7 @@ module FfcrmMailchimp
     # Unsubscribe the user
     def unsubscribe
       if contact.present?
-        contact.update_attributes( custom_field.name => {} )
+        contact.update( custom_field.name => {} )
       end
     end
 
@@ -104,7 +104,7 @@ module FfcrmMailchimp
       unsubscribe
       if (user_id = config.user_id) and contact.present?
         contact.comments.create!( user_id: user_id, comment: clean_reason )
-        contact.update_attribute(:subscribed_users, contact.subscribed_users - [user_id]) # don't subscribe Mailchimp user to email updates
+        contact.update(:subscribed_users, contact.subscribed_users - [user_id]) # don't subscribe Mailchimp user to email updates
       end
     end
 
@@ -143,9 +143,9 @@ module FfcrmMailchimp
     end
 
     # Serializes WebhookParams into ListSubscription ready for saving on custom field
-    # Returns a hash
+    # Returns Hash
     def cf_attributes_for(data)
-      data.to_list_subscription
+      (data.to_list_subscription || {}).to_h
     end
 
     def contact
