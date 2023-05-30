@@ -9,9 +9,11 @@ module FfcrmMailchimp
       Field.register( as: 'mailchimp_list', klass: 'CustomFieldMailchimpList', type: 'text')
 
       # Add admin/ffcrm_mailchimp tab
-      tab_urls = FatFreeCRM::Tabs.admin.map{|tab| tab[:url]}.map{|url| url[:controller]}
-      unless tab_urls.include? 'admin/ffcrm_mailchimp'
-        FatFreeCRM::Tabs.admin << {:url => { :controller => "admin/ffcrm_mailchimp" }, :text => "Mailchimp", :icon => 'fa-envelope'}
+      ActiveSupport.on_load(:fat_free_crm_view_factory) do
+        tab_urls = FatFreeCRM::Tabs.admin.map{|tab| tab[:url]}.map{|url| url[:controller]}
+        unless tab_urls.include? 'admin/ffcrm_mailchimp'
+          FatFreeCRM::Tabs.admin << {:url => { :controller => "admin/ffcrm_mailchimp" }, :text => "Mailchimp", :icon => 'fa-envelope'}
+        end
       end
 
       # When a contact is saved, ensure the mailchimp process hook is fired.
