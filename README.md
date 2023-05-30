@@ -1,5 +1,10 @@
 # FFCRM Mailchimp
 
+## Branches
+
+* master (fat_free_crm 0.20.1 / Rails 6.0)
+* rails3 (fat_free_crm 0.13.6 / Rails 3.2)
+
 ## About
 
 FFCRM Mailchimp is designed to work with the popular open source [Fat Free CRM](http://www.fatfreecrm.com).
