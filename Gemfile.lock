@@ -8,11 +8,10 @@ GIT
 
 GIT
   remote: https://github.com/fatfreecrm/ffcrm_endpoint
-  revision: 662d3a24bcc6bc05c500f893a7b88d9197111a64
-  branch: rails4
+  revision: 5994dc0433ea648117f3c56f1399974880557b7c
+  branch: master
   specs:
-    ffcrm_endpoint (0.2.0)
-      fat_free_crm
+    ffcrm_endpoint (1.0.1)
       rails
 
 PATH
@@ -20,7 +19,6 @@ PATH
   specs:
     ffcrm_mailchimp (2.0.0)
       delayed_job_active_record
-      ffcrm_endpoint
       gibbon
       rails
 
@@ -335,7 +333,7 @@ GEM
       actionpack (>= 5.2)
       activesupport (>= 5.2)
       sprockets (>= 3.0.0)
-    temple (0.10.1)
+    temple (0.10.2)
     terrapin (0.6.0)
       climate_control (>= 0.0.3, < 1.0)
     thor (1.2.2)
@@ -350,7 +348,7 @@ GEM
     websocket-driver (0.7.5)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
-    will_paginate (3.3.1)
+    will_paginate (4.0.0)
     zeitwerk (2.6.8)
 
 PLATFORMS

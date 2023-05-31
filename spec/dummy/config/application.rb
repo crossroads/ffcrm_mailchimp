@@ -14,6 +14,7 @@ require "sprockets/railtie"
 # require "rails/test_unit/railtie"
 
 Bundler.require(*Rails.groups)
+require "fat_free_crm"
 require "ffcrm_mailchimp"
 
 module Dummy

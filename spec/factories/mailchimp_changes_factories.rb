@@ -1,4 +1,5 @@
 require 'ffaker'
+require 'ffcrm_mailchimp/changes'
 
 FactoryBot.define do
 
