@@ -30,9 +30,9 @@ module FfcrmMailchimp
     end
 
     def logger
-      @logger ||= begin
+      @@logger ||= begin
         level = config.verbose ? Logger::INFO : Logger::ERROR
-        Logger.new(File.join(Rails.root, 'log', 'ffcrm_mailchimp.log'), level: level)
+        Logger.new(File.join(Rails.root, 'log', 'ffcrm_mailchimp.log'))
       end
     end
 
