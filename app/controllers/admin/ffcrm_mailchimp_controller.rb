@@ -2,8 +2,7 @@ require 'ffcrm_mailchimp'
 
 class Admin::FfcrmMailchimpController < Admin::ApplicationController
 
-  before_filter :require_user
-  before_filter "set_current_tab('admin/ffcrm_mailchimp')"
+  before_action -> { set_current_tab('admin/ffcrm_mailchimp') }
 
   # GET /admin/ffcrm_mailchimp
   #----------------------------------------------------------------------------
