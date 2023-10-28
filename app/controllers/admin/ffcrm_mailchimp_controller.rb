@@ -28,8 +28,8 @@ class Admin::FfcrmMailchimpController < Admin::ApplicationController
     if email_addresses.blank?
       flash[:info] = "Please provide at least one email address to reload from Mailchimp"
     else
-      FfcrmMailchimp.refresh_from_mailchimp!(email_addresses)
-      flash[:info] = "This job has been queued to run as a delayed job. Data for matching email addresses will be reloaded from Mailchimp in the background."
+      RefreshFromMailchimpJob.perform_later(email_addresses)
+      flash[:info] = "This job has been queued to run as a backgruond job. Data for matching email addresses will be reloaded from Mailchimp in the background."
     end
     redirect_to( action: 'index' )
   end

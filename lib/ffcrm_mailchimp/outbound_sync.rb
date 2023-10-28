@@ -9,16 +9,16 @@ module FfcrmMailchimp
 
     attr_accessor :record, :changes
 
-    def initialize(record, changes)
+    def initialize(record, subscribed_email)
       @record = record
-      @changes = changes
+      @subscribed_email = subscribed_email
     end
 
     #
     # Update mailchimp subscription for all the mailchimp lists linked in CRM
     # Handles unsubscribes when necessary
     def subscribe
-      if subscribed_email.blank?
+      if @subscribed_email.blank?
         FfcrmMailchimp.logger.info("#{Time.now.to_s(:db)} FfcrmMailchimp::OutboundSync: no email address for #{@record.class}##{@record.id}. Cannot proceed.")
         return
       end
@@ -35,7 +35,7 @@ module FfcrmMailchimp
           apply_mailchimp_subscription(subscription, list_id)
         else
           # list is no longer selected on form or @record.email is blank
-          FfcrmMailchimp::Api.unsubscribe(list_id, subscribed_email)
+          FfcrmMailchimp::Api.unsubscribe(list_id, @subscribed_email)
         end
       end
     end
@@ -65,15 +65,7 @@ module FfcrmMailchimp
       return if email.blank?
       merge_fields = { FIRST_NAME: @record.first_name, LAST_NAME: @record.last_name }.merge(extra_merge_vars)
       body = { email_address: email, merge_fields: merge_fields }
-      FfcrmMailchimp::Api.subscribe(list_id, subscribed_email, body, subscription.groupings)
-    end
-
-    #
-    # Return email address currently registered on the mailchimp list
-    # If contact is having it's email address updated, we must get the old email to update the lists
-    # If this is blank, we can't do anything
-    def subscribed_email
-      !@changes.old_email.blank? ? @changes.old_email : @record.email
+      FfcrmMailchimp::Api.subscribe(list_id, @subscribed_email, body, subscription.groupings)
     end
 
     #

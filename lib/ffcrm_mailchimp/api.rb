@@ -29,7 +29,7 @@ module FfcrmMailchimp
           gibbon.lists(list_id).members(email_digest(email)).upsert(body: body)
         rescue Gibbon::MailChimpError => e
           FfcrmMailchimp.logger.error("#{Time.now.to_s(:db)} FfcrmMailchimp::Api: Gibbon::MailchimpError #{e.status_code} #{e.title} #{e.detail} #{e.body} ")
-          raise e # throw it again to ensure that delayed_job tries again
+          raise e # throw it again to ensure that the job is tried again
         end
       end
 
@@ -44,7 +44,7 @@ module FfcrmMailchimp
             FfcrmMailchimp.logger.info("#{Time.now.to_s(:db)} FfcrmMailchimp::Api: user #{email} not found on list #{list_id}. Ignoring.")
           else
             FfcrmMailchimp.logger.error("#{Time.now.to_s(:db)} FfcrmMailchimp::Api: Gibbon::MailchimpError #{e.status_code} #{e.title} #{e.detail} #{e.body} ")
-            raise e  # throw it again to ensure that delayed_job tries again
+            raise e  # throw it again to ensure that the job is tried again
           end
         end
       end

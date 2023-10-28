@@ -4,8 +4,8 @@ require 'ffcrm_mailchimp/outbound_sync'
 module FfcrmMailchimp
 
   #
-  # A proxy class to enable OutboundSync via delayed job.
-  # We create a Changes class because ActiveRecord::Dirty is transient and probably won't survive a delayed_job queue
+  # A proxy class to enable OutboundSync via ActiveJob.
+  # We create a Changes class because ActiveRecord::Dirty is transient and probably won't survive an ActiveJob queue
   class DelayedOutboundSync
 
     #
@@ -16,7 +16,8 @@ module FfcrmMailchimp
       if changes.need_sychronization?
         if FfcrmMailchimp.config.sync_enabled?
           FfcrmMailchimp.logger.info("#{Time.now.to_s(:db)} FfcrmMailchimp::DelayedOutboundSync Queueing update to Mailchimp for #{record.class}##{record.id}")
-          FfcrmMailchimp::OutboundSync.new(record, changes).delay.subscribe
+          subscribed_email = changes.old_email || record.email # important to match correct record if email is being changed.
+          OutboundSyncSubscribeJob.perform_later(record, subscribed_email)
         else
           FfcrmMailchimp.logger.info("#{Time.now.to_s(:db)} FfcrmMailchimp::DelayedOutboundSync Sync disabled and therefore not queueing update to Mailchimp for #{record.class}##{record.id}")
         end
@@ -30,7 +31,7 @@ module FfcrmMailchimp
     def self.unsubscribe(record)
       if FfcrmMailchimp.config.sync_enabled?
         FfcrmMailchimp.logger.info("#{Time.now.to_s(:db)} FfcrmMailchimp::DelayedOutboundSync Scheduled Mailchimp list deletion for deleted contact #{record.class}##{record.id} - #{record.email}")
-        FfcrmMailchimp::OutboundSync.delay.unsubscribe(record.email)
+        OutboundSyncUnsubscribeJob.perform_later(record.email)
       else
         FfcrmMailchimp.logger.info("#{Time.now.to_s(:db)} FfcrmMailchimp::DelayedOutboundSync Sync disabled and therefore ignored list deletion for deleted contact #{record.class}##{record.id} - #{record.email}")
       end

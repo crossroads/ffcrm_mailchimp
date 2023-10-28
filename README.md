@@ -24,16 +24,6 @@ gem 'ffcrm_endpoint'
 gem 'ffcrm_mailchimp', github: 'crossroads/ffcrm_mailchimp'
 ```
 
-## Setup
-
-This plugin depends on delayed job. You will need to run the following commands to set it up:
-
-```
-bundle install
-rails generate delayed_job:active_record
-rake db:migrate
-```
-
 Start your rails server and goto the Admin -> Mailchimp tab.
 
 1. Input your MailChimp API key and select a default user who will be attributed with the changes the plugin makes. We suggest you create your own dedicated Mailchimp user for this. Save the form.
@@ -49,7 +39,7 @@ On mailchimp:
 
 Obviously, your webhook address needs to be a publicly accessible url. Mailchimp won't know where to go if you use localhost! However, if you'd like to try out this plugin on your local machine, I've found the ngrok proxy service invaluable. Just make sure you understand what is / does before using it!
 
-Final step: ensure delayed_job is running and you're good to go. Start creating/editing contacts and Mailchimp should be updated automatically and vice-versa.
+Start creating/editing contacts and Mailchimp should be updated automatically and vice-versa.
 
 ## Admin buttons
 
@@ -131,13 +121,9 @@ When you use FFCRM to subscribe someone to a MailChimp list, the person will not
 ## Development
 
 ```
-rvm install ruby-2.0.0-p648
-gem install bundler -v 1.7.3
+rvm install ruby-3.1.4
 bundle install
 # edit spec/dummy/config/database.yml
-rake db:create
-rake db:schema:load
-RAILS_ENV=test rake db:create
-RAILS_ENV=test rake db:schema:load
-rake spec
+rails db:create db:schema:load db:test:prepare
+rspec spec/
 ```

@@ -2,7 +2,6 @@ require "ffcrm_mailchimp/config"
 require "ffcrm_mailchimp/engine"
 require "ffcrm_mailchimp/list"
 require "ffcrm_mailchimp/refresh"
-require "delayed_job_active_record"
 
 module FfcrmMailchimp
 
@@ -15,10 +14,6 @@ module FfcrmMailchimp
 
     def clear_cache
       FfcrmMailchimp::Api.clear_cache
-    end
-
-    def refresh_from_mailchimp!(email_addresses)
-      FfcrmMailchimp::Refresh.delay.refresh_from_mailchimp(email_addresses)
     end
 
     def destroy_custom_fields!

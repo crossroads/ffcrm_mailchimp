@@ -15,7 +15,7 @@ describe FfcrmMailchimp::OutboundSync do
   let(:params)  { { email: email, custom_field: subscription_params } }
   let(:contact) { FactoryBot.build(:contact, params) }
   let(:changes) { FactoryBot.build(:changes) }
-  let(:sync)    { FfcrmMailchimp::OutboundSync.new(contact, changes) }
+  let(:sync)    { FfcrmMailchimp::OutboundSync.new(contact, email) }
   let(:subscription) { FfcrmMailchimp::ListSubscription.new( subscription_params ) }
   let(:mock_api_call) { double }
 
@@ -23,7 +23,6 @@ describe FfcrmMailchimp::OutboundSync do
 
     context "when subscribing a contact to the mailchimp list" do
       before do
-        allow(sync).to receive(:subscribed_email).and_return(email)
         expect(sync).to receive(:mailchimp_list_field_names).and_return( ['custom_field'] )
         expect(sync).to receive(:list_id_from_column).and_return( list_id )
         expect(subscription).to receive(:wants_to_subscribe?).and_return(true)
@@ -37,7 +36,6 @@ describe FfcrmMailchimp::OutboundSync do
 
     context "when unsubscribing a contact from the mailchimp list" do
       before {
-        allow(sync).to receive(:subscribed_email).and_return(email)
         allow(sync).to receive(:mailchimp_list_field_names).and_return( ['custom_field'] )
         allow(subscription).to receive(:wants_to_subscribe?).and_return(false)
         allow(FfcrmMailchimp::ListSubscription).to receive(:new).and_return(subscription)
@@ -51,7 +49,6 @@ describe FfcrmMailchimp::OutboundSync do
 
     context "when no changes have been detected" do
       before {
-        allow(sync).to receive(:subscribed_email).and_return(email)
         allow(sync).to receive(:mailchimp_list_field_names).and_return( [] )
       }
       it {
@@ -67,7 +64,6 @@ describe FfcrmMailchimp::OutboundSync do
 
     context "when subscribed_email is present" do
       it "should unsubscribe the user from the mailchimp list" do
-        allow(sync).to receive(:subscribed_email).and_return(email)
         allow(sync).to receive(:ffcrm_list_ids).and_return([list_id])
         expect(FfcrmMailchimp::Api).to receive(:unsubscribe).with(list_id, email)
         sync.unsubscribe(email)
@@ -76,7 +72,6 @@ describe FfcrmMailchimp::OutboundSync do
 
     context "when subscribed_email is blank" do
       it "should not unsubscribe the user from the mailchimp list" do
-        allow(sync).to receive(:subscribed_email).and_return(nil)
         expect(FfcrmMailchimp::Api).to_not receive(:unsubscribe)
         sync.unsubscribe('')
       end
@@ -85,8 +80,6 @@ describe FfcrmMailchimp::OutboundSync do
   end
 
   describe "apply_mailchimp_subscription" do
-
-    before { allow(sync).to receive(:subscribed_email).and_return(email) }
 
     it "should subscribe user to mailchimp list with particular interest groups" do
       expect(FfcrmMailchimp::Api).to receive(:subscribe) do |list_id, subscribed_email, body, groupings|

@@ -23,17 +23,6 @@ Usage
 Setup
 -----
 
-DelayedJob
-
-This plugin depends on delayed job.
-Run the following commands to set it up:
-
-```
-bundle install
-rails generate delayed_job:active_record
-rake db:migrate
-```
-
 1. Input your MailChimp API key and click “next”. We will go fetch the names of all the lists in your mailchimp account.
 2. Add MailChimp integration to the lists you would like to integrate with FFCRM
 3. That’s it! A new field will automatically be added to contacts so you can manage their MailChimp list subscriptions from FFCRM
