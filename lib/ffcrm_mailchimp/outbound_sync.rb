@@ -19,13 +19,13 @@ module FfcrmMailchimp
     # Handles unsubscribes when necessary
     def subscribe
       if @subscribed_email.blank?
-        FfcrmMailchimp.logger.info("#{Time.now.to_s(:db)} FfcrmMailchimp::OutboundSync: no email address for #{@record.class}##{@record.id}. Cannot proceed.")
+        FfcrmMailchimp.logger.info("#{Time.now.to_fs(:db)} FfcrmMailchimp::OutboundSync: no email address for #{@record.class}##{@record.id}. Cannot proceed.")
         return
       end
       mailchimp_list_field_names.each do |column|
         subscription = ListSubscription.new( @record.send(column) )
         if !subscription.source_is_ffcrm? # Stop if this is a webhook from mailchimp
-          FfcrmMailchimp.logger.info("#{Time.now.to_s(:db)} FfcrmMailchimp::OutboundSync: ignoring updates to #{@record.class}##{@record.id} (change initiated by webhook or no list subscription data)")
+          FfcrmMailchimp.logger.info("#{Time.now.to_fs(:db)} FfcrmMailchimp::OutboundSync: ignoring updates to #{@record.class}##{@record.id} (change initiated by webhook or no list subscription data)")
           break
         end
         # Note: it's important to get list_id from the column not the ListSubscription
@@ -48,7 +48,7 @@ module FfcrmMailchimp
     # When a contact is deleted, remove all mailchimp subscriptions
     def unsubscribe(email)
       if email.present?
-        FfcrmMailchimp.logger.info("#{Time.now.to_s(:db)} FfcrmMailchimp::OutboundSync: unsubscribing #{email} from all mailchimp lists.")
+        FfcrmMailchimp.logger.info("#{Time.now.to_fs(:db)} FfcrmMailchimp::OutboundSync: unsubscribing #{email} from all mailchimp lists.")
         ffcrm_list_ids.each do |list_id|
           FfcrmMailchimp::Api.unsubscribe(list_id, email)
         end

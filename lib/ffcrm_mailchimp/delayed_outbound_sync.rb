@@ -15,14 +15,14 @@ module FfcrmMailchimp
       changes = FfcrmMailchimp::Changes.new(record)
       if changes.need_sychronization?
         if FfcrmMailchimp.config.sync_enabled?
-          FfcrmMailchimp.logger.info("#{Time.now.to_s(:db)} FfcrmMailchimp::DelayedOutboundSync Queueing update to Mailchimp for #{record.class}##{record.id}")
+          FfcrmMailchimp.logger.info("#{Time.now.to_fs(:db)} FfcrmMailchimp::DelayedOutboundSync Queueing update to Mailchimp for #{record.class}##{record.id}")
           subscribed_email = changes.old_email || record.email # important to match correct record if email is being changed.
           OutboundSyncSubscribeJob.perform_later(record, subscribed_email)
         else
-          FfcrmMailchimp.logger.info("#{Time.now.to_s(:db)} FfcrmMailchimp::DelayedOutboundSync Sync disabled and therefore not queueing update to Mailchimp for #{record.class}##{record.id}")
+          FfcrmMailchimp.logger.info("#{Time.now.to_fs(:db)} FfcrmMailchimp::DelayedOutboundSync Sync disabled and therefore not queueing update to Mailchimp for #{record.class}##{record.id}")
         end
       else
-        FfcrmMailchimp.logger.info("#{Time.now.to_s(:db)} FfcrmMailchimp::DelayedOutboundSync No changes require update to Mailchimp for #{record.class}##{record.id}")
+        FfcrmMailchimp.logger.info("#{Time.now.to_fs(:db)} FfcrmMailchimp::DelayedOutboundSync No changes require update to Mailchimp for #{record.class}##{record.id}")
       end
     end
 
@@ -30,10 +30,10 @@ module FfcrmMailchimp
     # Always need to sync if contact is deleted.
     def self.unsubscribe(record)
       if FfcrmMailchimp.config.sync_enabled?
-        FfcrmMailchimp.logger.info("#{Time.now.to_s(:db)} FfcrmMailchimp::DelayedOutboundSync Scheduled Mailchimp list deletion for deleted contact #{record.class}##{record.id} - #{record.email}")
+        FfcrmMailchimp.logger.info("#{Time.now.to_fs(:db)} FfcrmMailchimp::DelayedOutboundSync Scheduled Mailchimp list deletion for deleted contact #{record.class}##{record.id} - #{record.email}")
         OutboundSyncUnsubscribeJob.perform_later(record.email)
       else
-        FfcrmMailchimp.logger.info("#{Time.now.to_s(:db)} FfcrmMailchimp::DelayedOutboundSync Sync disabled and therefore ignored list deletion for deleted contact #{record.class}##{record.id} - #{record.email}")
+        FfcrmMailchimp.logger.info("#{Time.now.to_fs(:db)} FfcrmMailchimp::DelayedOutboundSync Sync disabled and therefore ignored list deletion for deleted contact #{record.class}##{record.id} - #{record.email}")
       end
     end
 

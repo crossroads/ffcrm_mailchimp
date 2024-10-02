@@ -19,7 +19,7 @@ module FfcrmMailchimp
     def process
       return unless list_field_exists?
       if config.sync_disabled?
-        FfcrmMailchimp.logger.info("#{Time.now.to_s(:db)} FfcrmMailchimp::InboundSync Sync disabled. Ignoring incoming #{data.type}")
+        FfcrmMailchimp.logger.info("#{Time.now.to_fs(:db)} FfcrmMailchimp::InboundSync Sync disabled. Ignoring incoming #{data.type}")
         return
       end
       case data.type

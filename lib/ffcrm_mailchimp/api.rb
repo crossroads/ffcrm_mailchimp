@@ -24,33 +24,33 @@ module FfcrmMailchimp
       def subscribe(list_id, email, body = {}, groupings={})
         gibbon = Gibbon::Request.new()
         body = body.merge(status_if_new: "subscribed", status: "subscribed", interests: groupings_for_api(list_id, groupings))
-        FfcrmMailchimp.logger.info("#{Time.now.to_s(:db)} FfcrmMailchimp::Api: subscribing contact #{email} to list #{list_id}. Payload #{body}")
+        FfcrmMailchimp.logger.info("#{Time.now.to_fs(:db)} FfcrmMailchimp::Api: subscribing contact #{email} to list #{list_id}. Payload #{body}")
         begin
           gibbon.lists(list_id).members(email_digest(email)).upsert(body: body)
         rescue Gibbon::MailChimpError => e
-          FfcrmMailchimp.logger.error("#{Time.now.to_s(:db)} FfcrmMailchimp::Api: Gibbon::MailchimpError #{e.status_code} #{e.title} #{e.detail} #{e.body} ")
+          FfcrmMailchimp.logger.error("#{Time.now.to_fs(:db)} FfcrmMailchimp::Api: Gibbon::MailchimpError #{e.status_code} #{e.title} #{e.detail} #{e.body} ")
           raise e # throw it again to ensure that the job is tried again
         end
       end
 
       # Unsubscribe a user from the list entirely (marks them as unsubscribed in Mailchimp)
       def unsubscribe(list_id, email)
-        FfcrmMailchimp.logger.info("#{Time.now.to_s(:db)} FfcrmMailchimp::Api: unsubscribing #{email} from list #{list_id}")
+        FfcrmMailchimp.logger.info("#{Time.now.to_fs(:db)} FfcrmMailchimp::Api: unsubscribing #{email} from list #{list_id}")
         gibbon = Gibbon::Request.new()
         begin
           gibbon.lists(list_id).members(email_digest(email)).update(body: { status: "unsubscribed" })
         rescue Gibbon::MailChimpError => e
           if (e.status_code == 404)
-            FfcrmMailchimp.logger.info("#{Time.now.to_s(:db)} FfcrmMailchimp::Api: user #{email} not found on list #{list_id}. Ignoring.")
+            FfcrmMailchimp.logger.info("#{Time.now.to_fs(:db)} FfcrmMailchimp::Api: user #{email} not found on list #{list_id}. Ignoring.")
           else
-            FfcrmMailchimp.logger.error("#{Time.now.to_s(:db)} FfcrmMailchimp::Api: Gibbon::MailchimpError #{e.status_code} #{e.title} #{e.detail} #{e.body} ")
+            FfcrmMailchimp.logger.error("#{Time.now.to_fs(:db)} FfcrmMailchimp::Api: Gibbon::MailchimpError #{e.status_code} #{e.title} #{e.detail} #{e.body} ")
             raise e  # throw it again to ensure that the job is tried again
           end
         end
       end
 
       # Enumerate the categories and interest groups that users can subscribe to
-      # [ {"list_id"=>"4a1df096f3", "id"=>"34b9452245", "title"=>"Interest group 1", 
+      # [ {"list_id"=>"4a1df096f3", "id"=>"34b9452245", "title"=>"Interest group 1",
       #    "groups"=>[ {"id"=>"70b7107c8a", "name"=>"Option 1"}, {"id"=>"7c1719c788", "name"=>"Option 2"}, {"id"=>"8d856390f6", "name"=>"Option 3"}]
       #   }
       # ]
@@ -89,7 +89,7 @@ module FfcrmMailchimp
         begin
           result = gibbon.lists(list_id).members(email_digest(email_address)).retrieve
         rescue Gibbon::MailChimpError => e
-          FfcrmMailchimp.logger.error("#{Time.now.to_s(:db)} FfcrmMailchimp::Api: Gibbon::MailchimpError #{e.status_code} #{e.title} #{e.detail} #{e.body} ")
+          FfcrmMailchimp.logger.error("#{Time.now.to_fs(:db)} FfcrmMailchimp::Api: Gibbon::MailchimpError #{e.status_code} #{e.title} #{e.detail} #{e.body} ")
           if (e.status_code == 404)
             result = {} # member not found on list
           else
@@ -101,13 +101,13 @@ module FfcrmMailchimp
 
       def clear_cache
         all_lists.each do |list|
-          FfcrmMailchimp.logger.info("#{Time.now.to_s(:db)} FfcrmMailchimp::Api: Clearing cache: #{interest_groupings_cache_key(list['id'])}")
+          FfcrmMailchimp.logger.info("#{Time.now.to_fs(:db)} FfcrmMailchimp::Api: Clearing cache: #{interest_groupings_cache_key(list['id'])}")
           Rails.cache.delete( interest_groupings_cache_key(list['id']) )
         end
-        FfcrmMailchimp.logger.info("#{Time.now.to_s(:db)} FfcrmMailchimp::Api: Clearing cache: #{all_lists_cache_key}")
+        FfcrmMailchimp.logger.info("#{Time.now.to_fs(:db)} FfcrmMailchimp::Api: Clearing cache: #{all_lists_cache_key}")
         Rails.cache.delete( all_lists_cache_key )
       end
-      
+
       private
 
       def all_lists_cache_key
@@ -131,7 +131,7 @@ module FfcrmMailchimp
         end.flatten.compact.uniq
 
         result = {}
-        interest_groupings(list_id).each do |interest_category| 
+        interest_groupings(list_id).each do |interest_category|
           interest_category['groups'].each do |group|
             result[group['id']] = selected_group_names.include?(group['name']) # 'true' or 'false'
           end
